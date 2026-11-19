@@ -142,7 +142,8 @@ private fun HourlyItemCard(
             Spacer(modifier = Modifier.height(6.dp))
 
             // Precipitation Probability
-            if (hourly.precipitationProbability > 0) {
+            val rainChance = hourly.precipitationProbability
+            if (rainChance != null && rainChance > 0) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -154,7 +155,7 @@ private fun HourlyItemCard(
                     )
                     Spacer(modifier = Modifier.width(2.dp))
                     Text(
-                        text = "${hourly.precipitationProbability}%",
+                        text = "$rainChance%",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 10.sp

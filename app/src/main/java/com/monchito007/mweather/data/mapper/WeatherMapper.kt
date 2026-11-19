@@ -23,40 +23,40 @@ fun GeocodingLocationDto.toDomain(): LocationSearchResult {
 
 fun OpenMeteoForecastDto.toDomain(fallbackLocationName: String = ""): Weather {
     val currentDto = current
-    val weatherCode = currentDto?.weatherCode ?: 0
+    val weatherCode = currentDto?.weatherCode ?: WeatherCodeInfo.UNKNOWN_CODE
     val weatherCodeInfo = WeatherCodeInfo.fromCode(weatherCode)
 
     val currentWeather = CurrentWeather(
-        temperature = currentDto?.temperature2m ?: 0.0,
-        apparentTemperature = currentDto?.apparentTemperature ?: 0.0,
-        humidity = currentDto?.relativeHumidity2m?.toInt() ?: 0,
-        windSpeed = currentDto?.windSpeed10m ?: 0.0,
-        windDirection = currentDto?.windDirection10m?.toInt() ?: 0,
+        temperature = currentDto?.temperature2m,
+        apparentTemperature = currentDto?.apparentTemperature,
+        humidity = currentDto?.relativeHumidity2m?.toInt(),
+        windSpeed = currentDto?.windSpeed10m,
+        windDirection = currentDto?.windDirection10m?.toInt(),
         weatherCode = weatherCode,
         weatherDescription = weatherCodeInfo.description,
         isDay = (currentDto?.isDay ?: 1) == 1,
-        precipitation = currentDto?.precipitation ?: 0.0,
-        pressure = currentDto?.pressureMsl ?: 1013.25,
-        cloudCover = currentDto?.cloudCover?.toInt() ?: 0,
-        uvIndex = daily?.uvIndexMax?.firstOrNull() ?: 0.0
+        precipitation = currentDto?.precipitation,
+        pressure = currentDto?.pressureMsl,
+        cloudCover = currentDto?.cloudCover?.toInt(),
+        uvIndex = daily?.uvIndexMax?.firstOrNull()
     )
 
     val hourlyList = mutableListOf<HourlyForecast>()
     hourly?.time?.let { times ->
         for (i in times.indices) {
-            val code = hourly.weatherCode?.getOrNull(i) ?: 0
+            val code = hourly.weatherCode?.getOrNull(i) ?: WeatherCodeInfo.UNKNOWN_CODE
             val codeInfo = WeatherCodeInfo.fromCode(code)
             val timeStr = times[i]
             hourlyList.add(
                 HourlyForecast(
                     time = timeStr,
-                    temperature = hourly.temperature2m?.getOrNull(i) ?: 0.0,
+                    temperature = hourly.temperature2m?.getOrNull(i),
                     weatherCode = code,
                     weatherDescription = codeInfo.description,
-                    precipitationProbability = hourly.precipitationProbability?.getOrNull(i)?.toInt() ?: 0,
-                    precipitation = hourly.precipitation?.getOrNull(i) ?: 0.0,
-                    humidity = hourly.relativeHumidity2m?.getOrNull(i)?.toInt() ?: 0,
-                    windSpeed = hourly.windSpeed10m?.getOrNull(i) ?: 0.0,
+                    precipitationProbability = hourly.precipitationProbability?.getOrNull(i)?.toInt(),
+                    precipitation = hourly.precipitation?.getOrNull(i),
+                    humidity = hourly.relativeHumidity2m?.getOrNull(i)?.toInt(),
+                    windSpeed = hourly.windSpeed10m?.getOrNull(i),
                     isDay = (hourly.isDay?.getOrNull(i) ?: 1) == 1
                 )
             )
@@ -66,21 +66,21 @@ fun OpenMeteoForecastDto.toDomain(fallbackLocationName: String = ""): Weather {
     val dailyList = mutableListOf<DailyForecast>()
     daily?.time?.let { dates ->
         for (i in dates.indices) {
-            val code = daily.weatherCode?.getOrNull(i) ?: 0
+            val code = daily.weatherCode?.getOrNull(i) ?: WeatherCodeInfo.UNKNOWN_CODE
             val codeInfo = WeatherCodeInfo.fromCode(code)
             dailyList.add(
                 DailyForecast(
                     date = dates[i],
                     weatherCode = code,
                     weatherDescription = codeInfo.description,
-                    maxTemp = daily.temperature2mMax?.getOrNull(i) ?: 0.0,
-                    minTemp = daily.temperature2mMin?.getOrNull(i) ?: 0.0,
-                    precipitationSum = daily.precipitationSum?.getOrNull(i) ?: 0.0,
-                    precipitationProbabilityMax = daily.precipitationProbabilityMax?.getOrNull(i)?.toInt() ?: 0,
-                    windSpeedMax = daily.windSpeed10mMax?.getOrNull(i) ?: 0.0,
-                    uvIndexMax = daily.uvIndexMax?.getOrNull(i) ?: 0.0,
-                    sunrise = daily.sunrise?.getOrNull(i) ?: "",
-                    sunset = daily.sunset?.getOrNull(i) ?: ""
+                    maxTemp = daily.temperature2mMax?.getOrNull(i),
+                    minTemp = daily.temperature2mMin?.getOrNull(i),
+                    precipitationSum = daily.precipitationSum?.getOrNull(i),
+                    precipitationProbabilityMax = daily.precipitationProbabilityMax?.getOrNull(i)?.toInt(),
+                    windSpeedMax = daily.windSpeed10mMax?.getOrNull(i),
+                    uvIndexMax = daily.uvIndexMax?.getOrNull(i),
+                    sunrise = daily.sunrise?.getOrNull(i),
+                    sunset = daily.sunset?.getOrNull(i)
                 )
             )
         }

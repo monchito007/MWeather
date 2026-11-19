@@ -18,6 +18,9 @@ data class WeatherCodeInfo(
     val category: WeatherCategory
 ) {
     companion object {
+        /** Used when the API omits the weather code; maps to "Unknown", never to "Clear sky". */
+        const val UNKNOWN_CODE = -1
+
         fun fromCode(code: Int): WeatherCodeInfo {
             return when (code) {
                 0 -> WeatherCodeInfo(0, "Clear sky", WeatherCategory.CLEAR)

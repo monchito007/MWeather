@@ -1,5 +1,7 @@
 package com.monchito007.mweather.ui.weather.components
 
+import kotlin.math.roundToInt
+import com.monchito007.mweather.ui.weather.orNoData
 import com.monchito007.mweather.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
@@ -50,7 +52,7 @@ fun CurrentWeatherCard(
     maxTemp: Double?,
     minTemp: Double?,
     modifier: Modifier = Modifier,
-    precipitationProbability: Int = 0,
+    precipitationProbability: Int? = null,
     isHappyMode: Boolean = false
 ) {
     val primaryColor = MaterialTheme.colorScheme.primaryContainer
@@ -174,7 +176,7 @@ fun CurrentWeatherCard(
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (maxTemp != null && minTemp != null) {
+                    if (maxTemp != null || minTemp != null) {
                         val maxLabel = stringResource(R.string.temp_max)
                         val minLabel = stringResource(R.string.temp_min)
                         Text(
@@ -214,21 +216,21 @@ fun CurrentWeatherCard(
                         QuickMetricBadge(
                             icon = Icons.Rounded.WaterDrop,
                             label = stringResource(R.string.humidity),
-                            value = "${currentWeather.humidity}%"
+                            value = currentWeather.humidity.orNoData { "$it%" }
                         )
 
                         // Wind Speed
                         QuickMetricBadge(
                             icon = Icons.Rounded.Air,
                             label = stringResource(R.string.wind),
-                            value = "${currentWeather.windSpeed.toInt()} km/h"
+                            value = currentWeather.windSpeed.orNoData { "${it.roundToInt()} km/h" }
                         )
 
                         // Rain Chance
                         QuickMetricBadge(
                             icon = Icons.Rounded.Grain,
                             label = stringResource(R.string.rain),
-                            value = "$precipitationProbability%"
+                            value = precipitationProbability.orNoData { "$it%" }
                         )
                     }
                 }

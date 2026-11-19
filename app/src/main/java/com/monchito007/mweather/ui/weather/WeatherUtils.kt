@@ -20,6 +20,9 @@ import java.util.Calendar
  */
 object WeatherUtils {
 
+    /** Shown in place of any value the API didn't provide. */
+    const val NO_DATA = "—"
+
     fun getWeatherIcon(weatherCode: Int, isDay: Boolean = true): ImageVector {
         return when (weatherCode) {
             0 -> if (isDay) Icons.Rounded.WbSunny else Icons.Rounded.NightsStay
@@ -30,7 +33,7 @@ object WeatherUtils {
             61, 63, 65, 66, 67, 80, 81, 82 -> Icons.Rounded.WaterDrop
             71, 73, 75, 77, 85, 86 -> Icons.Rounded.AcUnit
             95, 96, 99 -> Icons.Rounded.Thunderstorm
-            else -> if (isDay) Icons.Rounded.WbSunny else Icons.Rounded.NightsStay
+            else -> Icons.Rounded.Cloud // unknown code: neutral icon, not a misleading sun
         }
     }
 
@@ -88,3 +91,7 @@ object WeatherUtils {
         }
     }
 }
+
+/** Formats a value, or returns [WeatherUtils.NO_DATA] when it's missing. */
+inline fun <T : Any> T?.orNoData(format: (T) -> String): String =
+    if (this == null) WeatherUtils.NO_DATA else format(this)

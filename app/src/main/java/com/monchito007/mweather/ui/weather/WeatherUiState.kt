@@ -19,7 +19,8 @@ enum class TemperatureUnit {
         }
     }
 
-    fun formatTemperature(celsius: Double): String {
+    fun formatTemperature(celsius: Double?): String {
+        if (celsius == null) return WeatherUtils.NO_DATA
         val converted = convertTemperature(celsius)
         return "${converted.roundToInt()}°"
     }
@@ -82,6 +83,6 @@ data class WeatherUiState(
         get() = weather?.locationName ?: selectedLocation?.displayLocation ?: ""
 
     fun formatTemp(celsius: Double?): String {
-        return celsius?.let { unit.formatTemperature(it) } ?: "--"
+        return unit.formatTemperature(celsius)
     }
 }

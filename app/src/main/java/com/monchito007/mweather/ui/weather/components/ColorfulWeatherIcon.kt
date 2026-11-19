@@ -48,7 +48,7 @@ object WeatherIconMapper {
             61, 63, 65, 66, 67, 80, 81, 82 -> WeatherIconType.RAIN
             71, 73, 75, 77, 85, 86 -> WeatherIconType.SNOW
             95, 96, 99 -> WeatherIconType.THUNDERSTORM
-            else -> if (isDay) WeatherIconType.CLEAR_DAY else WeatherIconType.CLEAR_NIGHT
+            else -> WeatherIconType.CLOUDY // unknown code: neutral icon, not a misleading sun
         }
     }
 }

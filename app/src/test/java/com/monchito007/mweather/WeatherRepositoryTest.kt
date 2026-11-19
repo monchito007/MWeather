@@ -23,7 +23,7 @@ class WeatherRepositoryTest {
         val weather = repository.getWeather(40.4, -3.7, "Madrid").getOrThrow()
 
         assertEquals("Madrid", weather.locationName)
-        assertEquals(18.5, weather.current.temperature, 0.001)
+        assertEquals(18.5, weather.current.temperature ?: 0.0, 0.001)
         assertEquals(2, weather.daily.size)
     }
 

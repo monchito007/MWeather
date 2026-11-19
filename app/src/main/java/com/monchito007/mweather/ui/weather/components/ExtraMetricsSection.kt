@@ -1,5 +1,7 @@
 package com.monchito007.mweather.ui.weather.components
 
+import kotlin.math.roundToInt
+import com.monchito007.mweather.ui.weather.orNoData
 import com.monchito007.mweather.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +42,7 @@ import com.monchito007.mweather.ui.weather.WeatherUtils
 fun ExtraMetricsSection(
     currentWeather: CurrentWeather,
     modifier: Modifier = Modifier,
-    precipitationProbability: Int = 0,
+    precipitationProbability: Int? = null,
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
@@ -81,15 +83,16 @@ fun ExtraMetricsSection(
                 MetricCard(
                     icon = Icons.Rounded.WaterDrop,
                     title = stringResource(R.string.humidity),
-                    value = "${currentWeather.humidity}%",
+                    value = currentWeather.humidity.orNoData { "$it%" },
                     supportingText = stringResource(R.string.humidity_level),
                     modifier = Modifier.weight(1f)
                 )
                 MetricCard(
                     icon = Icons.Rounded.Air,
                     title = stringResource(R.string.wind_speed),
-                    value = "${currentWeather.windSpeed} km/h",
-                    supportingText = stringResource(R.string.wind_direction, currentWeather.windDirection),
+                    value = currentWeather.windSpeed.orNoData { "$it km/h" },
+                    supportingText = currentWeather.windDirection?.let { stringResource(R.string.wind_direction, it) }
+                        ?: WeatherUtils.NO_DATA,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -102,15 +105,16 @@ fun ExtraMetricsSection(
                 MetricCard(
                     icon = Icons.Rounded.Compress,
                     title = stringResource(R.string.pressure),
-                    value = "${currentWeather.pressure.toInt()} hPa",
+                    value = currentWeather.pressure.orNoData { "${it.roundToInt()} hPa" },
                     supportingText = stringResource(R.string.atmospheric_pressure),
                     modifier = Modifier.weight(1f)
                 )
                 MetricCard(
                     icon = Icons.Rounded.WbSunny,
                     title = stringResource(R.string.uv_index),
-                    value = "${currentWeather.uvIndex}",
-                    supportingText = stringResource(WeatherUtils.uvIndexDescriptionRes(currentWeather.uvIndex)),
+                    value = currentWeather.uvIndex.orNoData { "$it" },
+                    supportingText = currentWeather.uvIndex?.let { stringResource(WeatherUtils.uvIndexDescriptionRes(it)) }
+                        ?: WeatherUtils.NO_DATA,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -123,14 +127,15 @@ fun ExtraMetricsSection(
                 MetricCard(
                     icon = Icons.Rounded.Grain,
                     title = stringResource(R.string.rain_chance),
-                    value = "$precipitationProbability%",
-                    supportingText = stringResource(R.string.precipitation_amount, currentWeather.precipitation.toString()),
+                    value = precipitationProbability.orNoData { "$it%" },
+                    supportingText = currentWeather.precipitation?.let { stringResource(R.string.precipitation_amount, it.toString()) }
+                        ?: WeatherUtils.NO_DATA,
                     modifier = Modifier.weight(1f)
                 )
                 MetricCard(
                     icon = Icons.Rounded.Cloud,
                     title = stringResource(R.string.cloud_cover),
-                    value = "${currentWeather.cloudCover}%",
+                    value = currentWeather.cloudCover.orNoData { "$it%" },
                     supportingText = stringResource(R.string.cloud_coverage),
                     modifier = Modifier.weight(1f)
                 )

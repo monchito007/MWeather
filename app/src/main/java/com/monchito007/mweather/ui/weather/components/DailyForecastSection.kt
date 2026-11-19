@@ -46,8 +46,9 @@ fun DailyForecastSection(
 ) {
     if (dailyForecast.isEmpty()) return
 
-    val overallMin = dailyForecast.minOfOrNull { it.minTemp } ?: 0.0
-    val overallMax = dailyForecast.maxOfOrNull { it.maxTemp } ?: 100.0
+    // Null when no day has data: the range bars then show only their background track.
+    val overallMin = dailyForecast.mapNotNull { it.minTemp }.minOrNull()
+    val overallMax = dailyForecast.mapNotNull { it.maxTemp }.maxOrNull()
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -109,8 +110,8 @@ private fun DailyForecastRowItem(
     day: DailyForecast,
     index: Int,
     unit: TemperatureUnit,
-    overallMin: Double,
-    overallMax: Double,
+    overallMin: Double?,
+    overallMax: Double?,
     isHappyMode: Boolean = false
 ) {
     Row(
@@ -140,10 +141,11 @@ private fun DailyForecastRowItem(
                 isHappyMode = isHappyMode,
                 modifier = Modifier.size(32.dp)
             )
-            if (day.precipitationProbabilityMax > 0) {
+            val rainChance = day.precipitationProbabilityMax
+            if (rainChance != null && rainChance > 0) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "${day.precipitationProbabilityMax}%",
+                    text = "$rainChance%",
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp
@@ -194,12 +196,22 @@ private fun DailyForecastRowItem(
 
 @Composable
 private fun TemperatureRangeBar(
-    minTemp: Double,
-    maxTemp: Double,
-    overallMin: Double,
-    overallMax: Double,
+    minTemp: Double?,
+    maxTemp: Double?,
+    overallMin: Double?,
+    overallMax: Double?,
     modifier: Modifier = Modifier
 ) {
+    if (minTemp == null || maxTemp == null || overallMin == null || overallMax == null) {
+        // Missing data: draw only the empty track instead of inventing a range.
+        Box(
+            modifier = modifier
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+        )
+        return
+    }
+
     val tempRange = (overallMax - overallMin).coerceAtLeast(1.0)
     val startFraction = ((minTemp - overallMin) / tempRange).coerceIn(0.0, 1.0).toFloat()
     val endFraction = ((maxTemp - overallMin) / tempRange).coerceIn(0.0, 1.0).toFloat()

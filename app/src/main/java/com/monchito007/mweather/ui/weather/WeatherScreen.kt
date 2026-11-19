@@ -255,7 +255,7 @@ fun WeatherScreenContent(
                         uiState.currentWeather != null -> {
                             val currentWeather = uiState.currentWeather!!
                             val todayDaily = uiState.dailyForecast.firstOrNull()
-                            val precipProb = todayDaily?.precipitationProbabilityMax ?: 0
+                            val precipProb = todayDaily?.precipitationProbabilityMax
 
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
