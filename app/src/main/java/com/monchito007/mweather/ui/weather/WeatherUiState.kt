@@ -1,0 +1,83 @@
+package com.monchito007.mweather.ui.weather
+
+import com.monchito007.mweather.domain.model.CurrentWeather
+import com.monchito007.mweather.domain.model.DailyForecast
+import com.monchito007.mweather.domain.model.HourlyForecast
+import com.monchito007.mweather.domain.model.LocationSearchResult
+import com.monchito007.mweather.domain.model.Weather
+import kotlin.math.roundToInt
+
+enum class TemperatureUnit {
+    CELSIUS,
+    FAHRENHEIT;
+
+    fun convertTemperature(celsius: Double): Double {
+        return when (this) {
+            CELSIUS -> celsius
+            FAHRENHEIT -> (celsius * 9.0 / 5.0) + 32.0
+        }
+    }
+
+    fun formatTemperature(celsius: Double): String {
+        val converted = convertTemperature(celsius)
+        return "${converted.roundToInt()}°"
+    }
+
+    val symbol: String
+        get() = when (this) {
+            CELSIUS -> "°C"
+            FAHRENHEIT -> "°F"
+        }
+}
+
+enum class AppLanguage(
+    val code: String,
+    val displayName: String
+) {
+    SPANISH("es", "Español"),
+    ENGLISH("en", "English")
+}
+
+enum class ThemeMode {
+    LIGHT,
+    DARK,
+    SYSTEM
+}
+
+data class WeatherUiState(
+    val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
+    val weather: Weather? = null,
+    val errorMessage: String? = null,
+    val searchQuery: String = "",
+    val searchResults: List<LocationSearchResult> = emptyList(),
+    val isSearching: Boolean = false,
+    val isSearchActive: Boolean = false,
+    val unit: TemperatureUnit = TemperatureUnit.CELSIUS,
+    val language: AppLanguage = AppLanguage.SPANISH,
+    val selectedLocation: LocationSearchResult? = null,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val isHappyMode: Boolean = false
+) {
+    val isDarkTheme: Boolean?
+        get() = when (themeMode) {
+            ThemeMode.LIGHT -> false
+            ThemeMode.DARK -> true
+            ThemeMode.SYSTEM -> null
+        }
+    val currentWeather: CurrentWeather?
+        get() = weather?.current
+
+    val dailyForecast: List<DailyForecast>
+        get() = weather?.daily ?: emptyList()
+
+    val hourlyForecast: List<HourlyForecast>
+        get() = weather?.hourly ?: emptyList()
+
+    val locationName: String
+        get() = weather?.locationName ?: selectedLocation?.displayLocation ?: ""
+
+    fun formatTemp(celsius: Double?): String {
+        return celsius?.let { unit.formatTemperature(it) } ?: "--"
+    }
+}
