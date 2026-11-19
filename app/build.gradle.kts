@@ -72,7 +72,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.logging.interceptor)
-    implementation(libs.moshi.kotlin)
+    implementation(libs.moshi)
     implementation(libs.okhttp)
     implementation(libs.play.services.location)
     implementation(libs.retrofit)
