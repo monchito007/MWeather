@@ -57,7 +57,9 @@ data class WeatherUiState(
     val language: AppLanguage = AppLanguage.SPANISH,
     val selectedLocation: LocationSearchResult? = null,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val isHappyMode: Boolean = false
+    val isHappyMode: Boolean = false,
+    /** False until the saved settings have been read, to avoid flashing the default theme. */
+    val preferencesLoaded: Boolean = false
 ) {
     val isDarkTheme: Boolean?
         get() = when (themeMode) {

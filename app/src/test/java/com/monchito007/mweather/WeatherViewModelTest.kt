@@ -1,5 +1,8 @@
 package com.monchito007.mweather
 
+import com.monchito007.mweather.data.preferences.SavedLocation
+import com.monchito007.mweather.data.preferences.UserPreferences
+import com.monchito007.mweather.data.preferences.UserPreferencesRepository
 import com.monchito007.mweather.domain.location.DeviceLocation
 import com.monchito007.mweather.domain.location.DeviceLocationProvider
 import com.monchito007.mweather.domain.model.CurrentWeather
@@ -10,10 +13,14 @@ import com.monchito007.mweather.domain.model.Weather
 import com.monchito007.mweather.domain.repository.WeatherRepository
 import com.monchito007.mweather.ui.weather.AppLanguage
 import com.monchito007.mweather.ui.weather.TemperatureUnit
+import com.monchito007.mweather.ui.weather.ThemeMode
 import com.monchito007.mweather.ui.weather.WeatherUtils
 import com.monchito007.mweather.ui.weather.WeatherViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -34,11 +41,13 @@ class WeatherViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeRepository: FakeWeatherRepository
+    private lateinit var fakePreferences: FakeUserPreferencesRepository
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepository = FakeWeatherRepository()
+        fakePreferences = FakeUserPreferencesRepository()
     }
 
     @After
@@ -48,11 +57,19 @@ class WeatherViewModelTest {
 
     /** Creates a ViewModel and performs the default-city load the screen would trigger. */
     private fun newViewModel(provider: DeviceLocationProvider? = null): WeatherViewModel =
-        WeatherViewModel(fakeRepository, provider).also { it.loadWeather() }
+        bareViewModel(provider).also { it.loadWeather() }
+
+    /** A ViewModel exactly as the app creates it, with no weather loaded yet. */
+    private fun bareViewModel(provider: DeviceLocationProvider? = null): WeatherViewModel =
+        WeatherViewModel(
+            repository = fakeRepository,
+            preferencesRepository = fakePreferences,
+            locationProvider = provider
+        )
 
     @Test
     fun testViewModelDoesNotLoadOnConstruction() = runTest {
-        val viewModel = WeatherViewModel(fakeRepository)
+        val viewModel = bareViewModel()
         advanceUntilIdle()
 
         assertNull(viewModel.uiState.value.weather)
@@ -61,7 +78,7 @@ class WeatherViewModelTest {
 
     @Test
     fun testStartInitialLoadOnlyOnce() = runTest {
-        val viewModel = WeatherViewModel(fakeRepository)
+        val viewModel = bareViewModel()
 
         assertTrue(viewModel.startInitialLoad())
         assertTrue(viewModel.uiState.value.isLoading)
@@ -71,7 +88,7 @@ class WeatherViewModelTest {
 
     @Test
     fun testPermissionDeniedLoadsDefaultCityOnce() = runTest {
-        val viewModel = WeatherViewModel(fakeRepository)
+        val viewModel = bareViewModel()
         viewModel.startInitialLoad()
 
         viewModel.onLocationPermissionDenied()
@@ -83,6 +100,83 @@ class WeatherViewModelTest {
         viewModel.onLocationPermissionDenied()
         advanceUntilIdle()
         assertEquals(1, fakeRepository.weatherRequests)
+    }
+
+    @Test
+    fun testSavedSettingsAreRestoredOnStart() = runTest {
+        fakePreferences.state.value = UserPreferences(
+            unit = TemperatureUnit.FAHRENHEIT,
+            language = AppLanguage.ENGLISH,
+            themeMode = ThemeMode.DARK,
+            isHappyMode = true
+        )
+        val viewModel = bareViewModel()
+        assertFalse(viewModel.uiState.value.preferencesLoaded)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.preferencesLoaded)
+        assertEquals(TemperatureUnit.FAHRENHEIT, state.unit)
+        assertEquals(AppLanguage.ENGLISH, state.language)
+        assertEquals(ThemeMode.DARK, state.themeMode)
+        assertTrue(state.isHappyMode)
+    }
+
+    @Test
+    fun testChangingSettingsPersistsThem() = runTest {
+        val viewModel = bareViewModel()
+        advanceUntilIdle()
+
+        viewModel.toggleTemperatureUnit()
+        viewModel.setLanguage(AppLanguage.ENGLISH)
+        viewModel.setThemeMode(ThemeMode.LIGHT)
+        viewModel.toggleHappyMode()
+        advanceUntilIdle()
+
+        val saved = fakePreferences.state.value
+        assertEquals(TemperatureUnit.FAHRENHEIT, saved.unit)
+        assertEquals(AppLanguage.ENGLISH, saved.language)
+        assertEquals(ThemeMode.LIGHT, saved.themeMode)
+        assertTrue(saved.isHappyMode)
+    }
+
+    @Test
+    fun testSelectingCitySavesItAsLastLocation() = runTest {
+        val viewModel = newViewModel()
+        advanceUntilIdle()
+
+        viewModel.selectLocation(
+            LocationSearchResult(id = 1L, name = "Tokyo", country = "Japan", latitude = 35.6762, longitude = 139.6503)
+        )
+        advanceUntilIdle()
+
+        assertEquals(SavedLocation(35.6762, 139.6503, "Tokyo, Japan"), fakePreferences.state.value.lastLocation)
+    }
+
+    @Test
+    fun testStartWithSavedCityLoadsItWithoutDeviceLocation() = runTest {
+        fakePreferences.state.value = UserPreferences(lastLocation = SavedLocation(48.85, 2.35, "Paris, France"))
+        val viewModel = bareViewModel()
+
+        val needsDeviceLocation = viewModel.startInitialLoad()
+        advanceUntilIdle()
+
+        assertFalse(needsDeviceLocation)
+        assertEquals("Paris, France", viewModel.uiState.value.weather?.locationName)
+        assertEquals(48.85, viewModel.uiState.value.weather?.latitude ?: 0.0, 0.001)
+    }
+
+    @Test
+    fun testUsingDeviceLocationForgetsSavedCity() = runTest {
+        fakePreferences.state.value = UserPreferences(lastLocation = SavedLocation(48.85, 2.35, "Paris, France"))
+        val viewModel = newViewModel(FakeDeviceLocationProvider())
+        advanceUntilIdle()
+
+        viewModel.fetchDeviceLocation()
+        advanceUntilIdle()
+
+        assertEquals("Madrid", viewModel.uiState.value.weather?.locationName)
+        assertNull(fakePreferences.state.value.lastLocation)
     }
 
     @Test
@@ -483,5 +577,26 @@ class FakeWeatherRepository : WeatherRepository {
             return Result.failure(Exception("Network Error"))
         }
         return Result.success(sampleWeather)
+    }
+}
+
+class FakeUserPreferencesRepository : UserPreferencesRepository {
+    val state = MutableStateFlow(UserPreferences())
+
+    override val preferences: Flow<UserPreferences> = state
+
+    override suspend fun saveDisplaySettings(
+        unit: TemperatureUnit,
+        language: AppLanguage,
+        themeMode: ThemeMode,
+        isHappyMode: Boolean
+    ) {
+        state.update {
+            it.copy(unit = unit, language = language, themeMode = themeMode, isHappyMode = isHappyMode)
+        }
+    }
+
+    override suspend fun saveLastLocation(location: SavedLocation?) {
+        state.update { it.copy(lastLocation = location) }
     }
 }

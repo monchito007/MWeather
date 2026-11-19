@@ -20,7 +20,7 @@ import com.monchito007.mweather.ui.weather.WeatherViewModel
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: WeatherViewModel by viewModels()
+    private val viewModel: WeatherViewModel by viewModels { WeatherViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +30,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            // Saved settings are read in a few ms; until then the window background is shown
+            // instead of briefly rendering the default theme/language.
+            if (!uiState.preferencesLoaded) return@setContent
             val isDarkTheme = when (uiState.themeMode) {
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
