@@ -13,7 +13,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.monchito007.mweather.data.location.DeviceLocationProviderImpl
 import com.monchito007.mweather.ui.theme.MWeatherTheme
 import com.monchito007.mweather.ui.weather.ThemeMode
 import com.monchito007.mweather.ui.weather.WeatherScreen
@@ -25,9 +24,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val locationProvider = DeviceLocationProviderImpl(applicationContext)
-        viewModel.setLocationProvider(locationProvider)
-
         enableEdgeToEdge()
         setContent {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -46,10 +42,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     ProvideAppLanguage(uiState.language) {
-                        WeatherScreen(
-                            viewModel = viewModel,
-                            locationProvider = locationProvider
-                        )
+                        WeatherScreen(viewModel = viewModel)
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.monchito007.mweather.ui.weather
 
+import com.monchito007.mweather.MWeatherApplication
 import com.monchito007.mweather.R
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
@@ -7,11 +8,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.monchito007.mweather.data.preferences.DataStoreUserPreferencesRepository
 import com.monchito007.mweather.data.preferences.SavedLocation
 import com.monchito007.mweather.data.preferences.UserPreferences
 import com.monchito007.mweather.data.preferences.UserPreferencesRepository
-import com.monchito007.mweather.data.repository.WeatherRepositoryImpl
 import com.monchito007.mweather.domain.location.DeviceLocationProvider
 import com.monchito007.mweather.domain.model.LocationSearchResult
 import com.monchito007.mweather.domain.repository.WeatherRepository
@@ -28,9 +27,9 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 class WeatherViewModel(
-    private val repository: WeatherRepository = WeatherRepositoryImpl(),
+    private val repository: WeatherRepository,
     private val preferencesRepository: UserPreferencesRepository,
-    private var locationProvider: DeviceLocationProvider? = null
+    private val locationProvider: DeviceLocationProvider
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WeatherUiState())
@@ -87,16 +86,10 @@ class WeatherViewModel(
         }
     }
 
-    fun setLocationProvider(provider: DeviceLocationProvider) {
-        this.locationProvider = provider
-    }
+    fun hasLocationPermission(): Boolean = locationProvider.hasLocationPermission()
 
-    fun fetchDeviceLocation(
-        provider: DeviceLocationProvider? = locationProvider,
-        onPermissionDenied: (() -> Unit)? = null
-    ) {
-        val activeProvider = provider ?: locationProvider
-        if (activeProvider == null || !activeProvider.hasLocationPermission()) {
+    fun fetchDeviceLocation(onPermissionDenied: (() -> Unit)? = null) {
+        if (!locationProvider.hasLocationPermission()) {
             onPermissionDenied?.invoke()
             if (_uiState.value.weather == null) {
                 loadWeather()
@@ -114,7 +107,7 @@ class WeatherViewModel(
                 )
             }
 
-            val deviceLocation = activeProvider.getCurrentLocation()
+            val deviceLocation = locationProvider.getCurrentLocation()
             if (deviceLocation != null) {
                 // Blank name: the UI shows a localized "Current location" label instead.
                 val locationName = deviceLocation.name.orEmpty()
@@ -359,11 +352,15 @@ class WeatherViewModel(
     }
 
     companion object {
+        /** Builds the ViewModel from the app-wide [com.monchito007.mweather.di.AppContainer]. */
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = checkNotNull(this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
+                val container = (application as MWeatherApplication).container
                 WeatherViewModel(
-                    preferencesRepository = DataStoreUserPreferencesRepository.create(application)
+                    repository = container.weatherRepository,
+                    preferencesRepository = container.userPreferencesRepository,
+                    locationProvider = container.locationProvider
                 )
             }
         }

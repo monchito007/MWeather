@@ -1,6 +1,5 @@
 package com.monchito007.mweather.data.repository
 
-import com.monchito007.mweather.data.api.ApiClient
 import com.monchito007.mweather.data.api.OpenMeteoApi
 import com.monchito007.mweather.data.mapper.toDomain
 import com.monchito007.mweather.domain.model.LocationSearchResult
@@ -14,7 +13,7 @@ import kotlinx.coroutines.CancellationException
  * successfully loaded weather on screen while showing the error.
  */
 class WeatherRepositoryImpl(
-    private val api: OpenMeteoApi = ApiClient.openMeteoApi,
+    private val api: OpenMeteoApi,
 ) : WeatherRepository {
 
     override suspend fun searchLocations(

@@ -50,8 +50,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.monchito007.mweather.data.location.DeviceLocationProviderImpl
-import com.monchito007.mweather.domain.location.DeviceLocationProvider
 import com.monchito007.mweather.domain.model.CurrentWeather
 import com.monchito007.mweather.domain.model.DailyForecast
 import com.monchito007.mweather.domain.model.HourlyForecast
@@ -67,16 +65,11 @@ import com.monchito007.mweather.ui.weather.components.SettingsMenuButton
 @Composable
 fun WeatherScreen(
     viewModel: WeatherViewModel,
-    locationProvider: DeviceLocationProvider? = null,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val resources = LocalResources.current
-
-    val activeLocationProvider = remember(locationProvider, context) {
-        locationProvider ?: DeviceLocationProviderImpl(context.applicationContext)
-    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -84,7 +77,7 @@ fun WeatherScreen(
         val isGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         if (isGranted) {
-            viewModel.fetchDeviceLocation(activeLocationProvider)
+            viewModel.fetchDeviceLocation()
         } else {
             Toast.makeText(
                 context,
@@ -95,10 +88,10 @@ fun WeatherScreen(
         }
     }
 
-    val requestLocationAndFetch = remember(activeLocationProvider) {
+    val requestLocationAndFetch = remember(viewModel) {
         {
-            if (activeLocationProvider.hasLocationPermission()) {
-                viewModel.fetchDeviceLocation(activeLocationProvider)
+            if (viewModel.hasLocationPermission()) {
+                viewModel.fetchDeviceLocation()
             } else {
                 permissionLauncher.launch(
                     arrayOf(

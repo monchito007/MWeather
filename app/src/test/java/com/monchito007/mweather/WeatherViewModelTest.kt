@@ -56,11 +56,11 @@ class WeatherViewModelTest {
     }
 
     /** Creates a ViewModel and performs the default-city load the screen would trigger. */
-    private fun newViewModel(provider: DeviceLocationProvider? = null): WeatherViewModel =
+    private fun newViewModel(provider: DeviceLocationProvider = FakeDeviceLocationProvider()): WeatherViewModel =
         bareViewModel(provider).also { it.loadWeather() }
 
     /** A ViewModel exactly as the app creates it, with no weather loaded yet. */
-    private fun bareViewModel(provider: DeviceLocationProvider? = null): WeatherViewModel =
+    private fun bareViewModel(provider: DeviceLocationProvider = FakeDeviceLocationProvider()): WeatherViewModel =
         WeatherViewModel(
             repository = fakeRepository,
             preferencesRepository = fakePreferences,
