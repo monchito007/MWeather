@@ -1,16 +1,6 @@
 package com.monchito007.mweather.ui.weather
 
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AcUnit
-import androidx.compose.material.icons.rounded.Cloud
-import androidx.compose.material.icons.rounded.Grain
-import androidx.compose.material.icons.rounded.NightsStay
-import androidx.compose.material.icons.rounded.Thunderstorm
-import androidx.compose.material.icons.rounded.WaterDrop
-import androidx.compose.material.icons.rounded.WbCloudy
-import androidx.compose.material.icons.rounded.WbSunny
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.monchito007.mweather.R
 import java.util.Calendar
 
@@ -22,20 +12,6 @@ object WeatherUtils {
 
     /** Shown in place of any value the API didn't provide. */
     const val NO_DATA = "—"
-
-    fun getWeatherIcon(weatherCode: Int, isDay: Boolean = true): ImageVector {
-        return when (weatherCode) {
-            0 -> if (isDay) Icons.Rounded.WbSunny else Icons.Rounded.NightsStay
-            1, 2 -> if (isDay) Icons.Rounded.WbCloudy else Icons.Rounded.NightsStay
-            3 -> Icons.Rounded.Cloud
-            45, 48 -> Icons.Rounded.Grain
-            51, 53, 55, 56, 57 -> Icons.Rounded.Grain
-            61, 63, 65, 66, 67, 80, 81, 82 -> Icons.Rounded.WaterDrop
-            71, 73, 75, 77, 85, 86 -> Icons.Rounded.AcUnit
-            95, 96, 99 -> Icons.Rounded.Thunderstorm
-            else -> Icons.Rounded.Cloud // unknown code: neutral icon, not a misleading sun
-        }
-    }
 
     @StringRes
     fun weatherDescriptionRes(weatherCode: Int): Int = when (weatherCode) {
