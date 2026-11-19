@@ -1,0 +1,41 @@
+# Hoja de ruta de MWeather
+
+Propuestas de mejora pendientes. Última revisión: 19/11/2026.
+
+## Funcionalidades nuevas
+
+- [ ] **Ciudades favoritas**: guardar varias ciudades y pasar de una a otra deslizando. Requiere volver a añadir Room (se eliminó por no usarse).
+- [ ] **Caché offline**: guardar el último pronóstico y mostrarlo sin conexión, con un indicador de "actualizado hace X min".
+- [ ] **Widget** para la pantalla de inicio (Jetpack Glance).
+- [ ] **Calidad del aire y polen** con la [API de Air Quality de Open-Meteo](https://open-meteo.com/en/docs/air-quality-api) (gratuita).
+- [ ] **Alertas de lluvia** mediante notificaciones (WorkManager).
+- [ ] **Diseño para tablet y plegables**. Requiere volver a añadir Material3 Adaptive (se eliminó por no usarse).
+
+## Mejoras técnicas
+
+- [ ] **Mover `TemperatureUnit`, `AppLanguage` y `ThemeMode` a `domain`**. Ahora están en `ui.weather` y la capa de datos (`data/preferences`) los importa desde la interfaz.
+- [ ] **Idioma del sistema en el primer arranque**. Si no hay idioma guardado, la app arranca siempre en español, aunque el móvil esté en inglés.
+- [ ] **Medir el rendimiento de `ColorfulWeatherIcon`**. Cada redibujado vuelve a crear los `Path` y `Brush`. Si se confirma que es un problema, valorar `drawWithCache`; no se aplicó porque añade complejidad sin una mejora medida.
+- [ ] **Test de extremo a extremo** que arranque la app completa. Habría que simular la red y el permiso de ubicación para que no falle de forma intermitente.
+
+### Descartado por ahora
+
+- **Subir `minSdk` a 26 o activar `coreLibraryDesugaring`**. Las fechas ya usan `Calendar` y funcionan desde Android 7 (API 24); subir el mínimo dejaría fuera esos dispositivos sin ganar nada concreto.
+
+## Hecho
+
+Mejoras de la revisión inicial, ya en `main`:
+
+- Errores de red visibles en lugar de datos inventados
+- Geocodificación inversa fuera del hilo principal
+- Una sola carga al arrancar (también al rotar la pantalla)
+- Logging HTTP solo en builds de depuración
+- Preferencias y última ciudad guardadas con DataStore
+- Textos en `strings.xml` (inglés y español) con selector de idioma en la app
+- Dependencias sin usar eliminadas y versiones fijas
+- Moshi con adaptadores generados, sin reflexión
+- "—" para los datos que faltan en lugar de ceros
+- Contenedor de dependencias manual (`di/AppContainer`)
+- Tests de interfaz con Compose y limpieza de los iconos del tiempo
+
+Resultado: el APK de release pasó de 4,9 MB a 3 MB.
