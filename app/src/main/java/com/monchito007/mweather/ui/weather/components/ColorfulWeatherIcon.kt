@@ -53,7 +53,9 @@ object WeatherIconMapper {
     }
 }
 
-enum class FaceStyle {
+private val DEFAULT_CHEEK_COLOR = Color(0xFFFF8A80)
+
+private enum class FaceStyle {
     HAPPY_SUN,
     SLEEPY_MOON,
     KAWAII_CLOUD,
@@ -262,16 +264,10 @@ private fun DrawScope.drawPartlyCloudyDay(w: Float, h: Float, isHappyMode: Boole
     val cloudBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFFFFFFFF), Color(0xFFE0F7FA), Color(0xFF90A4AE))
     )
-    drawMainCloud(w, h, cloudBrush, offsetY = h * 0.05f)
-
-    if (isHappyMode) {
-        drawKawaiiFace(
-            center = Offset(w * 0.48f, h * 0.52f + h * 0.05f),
-            faceSize = w * 0.26f,
-            style = FaceStyle.KAWAII_CLOUD,
-            eyeColor = Color(0xFF37474F)
-        )
-    }
+    drawMainCloudWithFace(
+        w, h, cloudBrush, offsetY = h * 0.05f, isHappyMode = isHappyMode,
+        face = FaceStyle.KAWAII_CLOUD, eyeColor = Color(0xFF37474F)
+    )
 }
 
 private fun DrawScope.drawPartlyCloudyNight(w: Float, h: Float, isHappyMode: Boolean = false) {
@@ -300,35 +296,16 @@ private fun DrawScope.drawPartlyCloudyNight(w: Float, h: Float, isHappyMode: Boo
     val cloudBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFFECEFF1), Color(0xFFB0BEC5), Color(0xFF78909C))
     )
-    drawMainCloud(w, h, cloudBrush, offsetY = h * 0.05f)
-
-    if (isHappyMode) {
-        drawKawaiiFace(
-            center = Offset(w * 0.48f, h * 0.52f + h * 0.05f),
-            faceSize = w * 0.26f,
-            style = FaceStyle.KAWAII_CLOUD,
-            eyeColor = Color(0xFF263238)
-        )
-    }
+    drawMainCloudWithFace(
+        w, h, cloudBrush, offsetY = h * 0.05f, isHappyMode = isHappyMode,
+        face = FaceStyle.KAWAII_CLOUD, eyeColor = Color(0xFF263238)
+    )
 }
 
 private fun DrawScope.drawCloudy(w: Float, h: Float, isHappyMode: Boolean = false) {
     // Multi-layered soft clouds (#78909C, #B0BEC5)
     // Back darker cloud layer
-    val backCloudBrush = Brush.verticalGradient(
-        colors = listOf(Color(0xFF90A4AE), Color(0xFF78909C), Color(0xFF546E7A))
-    )
-    drawCloudPath(
-        leftCenter = Offset(w * 0.40f, h * 0.45f),
-        leftRadius = w * 0.18f,
-        topCenter = Offset(w * 0.58f, h * 0.35f),
-        topRadius = w * 0.22f,
-        rightCenter = Offset(w * 0.78f, h * 0.46f),
-        rightRadius = w * 0.17f,
-        baseRect = Rect(w * 0.26f, h * 0.42f, w * 0.88f, h * 0.58f),
-        cornerRadius = w * 0.10f,
-        brush = backCloudBrush
-    )
+    drawBackCloud(w, h)
 
     if (isHappyMode) {
         drawKawaiiFace(
@@ -343,48 +320,23 @@ private fun DrawScope.drawCloudy(w: Float, h: Float, isHappyMode: Boolean = fals
     val frontCloudBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFFFFFFFF), Color(0xFFECEFF1), Color(0xFFB0BEC5))
     )
-    drawMainCloud(w, h, frontCloudBrush, offsetY = h * 0.08f)
-
-    if (isHappyMode) {
-        drawKawaiiFace(
-            center = Offset(w * 0.48f, h * 0.52f + h * 0.08f),
-            faceSize = w * 0.26f,
-            style = FaceStyle.KAWAII_CLOUD,
-            eyeColor = Color(0xFF37474F)
-        )
-    }
+    drawMainCloudWithFace(
+        w, h, frontCloudBrush, offsetY = h * 0.08f, isHappyMode = isHappyMode,
+        face = FaceStyle.KAWAII_CLOUD, eyeColor = Color(0xFF37474F)
+    )
 }
 
 private fun DrawScope.drawFog(w: Float, h: Float, isHappyMode: Boolean = false) {
     // Back cloud layer
-    val backCloudBrush = Brush.verticalGradient(
-        colors = listOf(Color(0xFF90A4AE), Color(0xFF78909C), Color(0xFF546E7A))
-    )
-    drawCloudPath(
-        leftCenter = Offset(w * 0.40f, h * 0.45f),
-        leftRadius = w * 0.18f,
-        topCenter = Offset(w * 0.58f, h * 0.35f),
-        topRadius = w * 0.22f,
-        rightCenter = Offset(w * 0.78f, h * 0.46f),
-        rightRadius = w * 0.17f,
-        baseRect = Rect(w * 0.26f, h * 0.42f, w * 0.88f, h * 0.58f),
-        cornerRadius = w * 0.10f,
-        brush = backCloudBrush
-    )
+    drawBackCloud(w, h)
 
     val frontCloudBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFFFFFFFF), Color(0xFFECEFF1), Color(0xFFB0BEC5))
     )
-    drawMainCloud(w, h, frontCloudBrush, offsetY = h * 0.08f)
-
-    if (isHappyMode) {
-        drawKawaiiFace(
-            center = Offset(w * 0.48f, h * 0.52f + h * 0.08f),
-            faceSize = w * 0.26f,
-            style = FaceStyle.COZY_FOG,
-            eyeColor = Color(0xFF37474F)
-        )
-    }
+    drawMainCloudWithFace(
+        w, h, frontCloudBrush, offsetY = h * 0.08f, isHappyMode = isHappyMode,
+        face = FaceStyle.COZY_FOG, eyeColor = Color(0xFF37474F)
+    )
 
     drawFogStreaks(w, h)
 }
@@ -394,16 +346,10 @@ private fun DrawScope.drawDrizzle(w: Float, h: Float, isHappyMode: Boolean = fal
     val cloudBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFFECEFF1), Color(0xFF90A4AE), Color(0xFF607D8B))
     )
-    drawMainCloud(w, h, cloudBrush, offsetY = -h * 0.05f)
-
-    if (isHappyMode) {
-        drawKawaiiFace(
-            center = Offset(w * 0.48f, h * 0.52f - h * 0.05f),
-            faceSize = w * 0.26f,
-            style = FaceStyle.KAWAII_CLOUD,
-            eyeColor = Color(0xFF263238)
-        )
-    }
+    drawMainCloudWithFace(
+        w, h, cloudBrush, offsetY = -h * 0.05f, isHappyMode = isHappyMode,
+        face = FaceStyle.KAWAII_CLOUD, eyeColor = Color(0xFF263238)
+    )
 
     // Light Vivid Cyan Raindrops
     val drops = listOf(
@@ -424,16 +370,10 @@ private fun DrawScope.drawRain(w: Float, h: Float, isHappyMode: Boolean = false)
     val cloudBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFFB0BEC5), Color(0xFF78909C), Color(0xFF455A64))
     )
-    drawMainCloud(w, h, cloudBrush, offsetY = -h * 0.06f)
-
-    if (isHappyMode) {
-        drawKawaiiFace(
-            center = Offset(w * 0.48f, h * 0.52f - h * 0.06f),
-            faceSize = w * 0.26f,
-            style = FaceStyle.KAWAII_CLOUD,
-            eyeColor = Color(0xFF1A237E)
-        )
-    }
+    drawMainCloudWithFace(
+        w, h, cloudBrush, offsetY = -h * 0.06f, isHappyMode = isHappyMode,
+        face = FaceStyle.KAWAII_CLOUD, eyeColor = Color(0xFF1A237E)
+    )
 
     // Vivid Blue/Cyan Raindrops (#29B6F6, #0288D1)
     val drops = listOf(
@@ -455,17 +395,10 @@ private fun DrawScope.drawThunderstorm(w: Float, h: Float, isHappyMode: Boolean 
     val cloudBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFF546E7A), Color(0xFF37474F), Color(0xFF1A237E))
     )
-    drawMainCloud(w, h, cloudBrush, offsetY = -h * 0.08f)
-
-    if (isHappyMode) {
-        drawKawaiiFace(
-            center = Offset(w * 0.48f, h * 0.52f - h * 0.08f),
-            faceSize = w * 0.26f,
-            style = FaceStyle.CHEEKY_STORM,
-            eyeColor = Color(0xFFECEFF1),
-            cheekColor = Color(0xFFFF5252)
-        )
-    }
+    drawMainCloudWithFace(
+        w, h, cloudBrush, offsetY = -h * 0.08f, isHappyMode = isHappyMode,
+        face = FaceStyle.CHEEKY_STORM, eyeColor = Color(0xFFECEFF1), cheekColor = Color(0xFFFF5252)
+    )
 
     // Bold Electric Yellow Lightning Bolt (#FFEB3B, #F57F17)
     drawLightningBolt(
@@ -491,17 +424,10 @@ private fun DrawScope.drawSnow(w: Float, h: Float, isHappyMode: Boolean = false)
     val cloudBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFFFFFFFF), Color(0xFFE0F7FA), Color(0xFF78909C))
     )
-    drawMainCloud(w, h, cloudBrush, offsetY = -h * 0.06f)
-
-    if (isHappyMode) {
-        drawKawaiiFace(
-            center = Offset(w * 0.48f, h * 0.52f - h * 0.06f),
-            faceSize = w * 0.26f,
-            style = FaceStyle.KAWAII_CLOUD,
-            eyeColor = Color(0xFF37474F),
-            cheekColor = Color(0xFF80DEEA)
-        )
-    }
+    drawMainCloudWithFace(
+        w, h, cloudBrush, offsetY = -h * 0.06f, isHappyMode = isHappyMode,
+        face = FaceStyle.KAWAII_CLOUD, eyeColor = Color(0xFF37474F), cheekColor = Color(0xFF80DEEA)
+    )
 
     // Soft Cyan/White Crystalline Snowflakes (#80DEEA, #E0F7FA)
     drawSnowflake(Offset(w * 0.50f, h * 0.75f), w * 0.11f, Color(0xFF80DEEA))
@@ -516,7 +442,7 @@ private fun DrawScope.drawKawaiiFace(
     faceSize: Float,
     style: FaceStyle = FaceStyle.KAWAII_CLOUD,
     eyeColor: Color = Color(0xFF2C3E50),
-    cheekColor: Color = Color(0xFFFF8A80)
+    cheekColor: Color = DEFAULT_CHEEK_COLOR
 ) {
     val eyeDistance = faceSize * 0.36f
     val eyeYOffset = -faceSize * 0.08f
@@ -548,22 +474,8 @@ private fun DrawScope.drawKawaiiFace(
 
     when (style) {
         FaceStyle.HAPPY_SUN, FaceStyle.KAWAII_CLOUD -> {
-            // Cute glossy eyes
-            drawCircle(color = eyeColor, center = leftEyeCenter, radius = eyeRadius)
-            drawCircle(color = eyeColor, center = rightEyeCenter, radius = eyeRadius)
-            // Eye shine reflection dots
-            val shineOffset = eyeRadius * 0.35f
-            val shineRadius = eyeRadius * 0.38f
-            drawCircle(
-                color = Color.White,
-                center = Offset(leftEyeCenter.x - shineOffset, leftEyeCenter.y - shineOffset),
-                radius = shineRadius
-            )
-            drawCircle(
-                color = Color.White,
-                center = Offset(rightEyeCenter.x - shineOffset, rightEyeCenter.y - shineOffset),
-                radius = shineRadius
-            )
+            drawGlossyEye(leftEyeCenter, eyeRadius, eyeColor)
+            drawGlossyEye(rightEyeCenter, eyeRadius, eyeColor)
         }
         FaceStyle.SLEEPY_MOON -> {
             // Closed happy arc eyes (^ ^)
@@ -573,12 +485,7 @@ private fun DrawScope.drawKawaiiFace(
         FaceStyle.CHEEKY_STORM -> {
             // Wink eye on left, glossy eye on right
             drawWinkEye(leftEyeCenter, eyeRadius * 1.3f, strokeWidth, eyeColor)
-            drawCircle(color = eyeColor, center = rightEyeCenter, radius = eyeRadius)
-            drawCircle(
-                color = Color.White,
-                center = Offset(rightEyeCenter.x - eyeRadius * 0.35f, rightEyeCenter.y - eyeRadius * 0.35f),
-                radius = eyeRadius * 0.38f
-            )
+            drawGlossyEye(rightEyeCenter, eyeRadius, eyeColor)
         }
         FaceStyle.COZY_FOG -> {
             // Contented closed eyes (v v)
@@ -600,11 +507,6 @@ private fun DrawScope.drawKawaiiFace(
                 center.x, center.y + mouthYOffset + mouthCurve,
                 center.x + mouthWidth, center.y + mouthYOffset
             )
-            drawPath(
-                path = mouthPath,
-                color = eyeColor,
-                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-            )
         }
         FaceStyle.CHEEKY_STORM -> {
             // Cute playful 'w' mouth
@@ -617,11 +519,6 @@ private fun DrawScope.drawKawaiiFace(
                 center.x + mouthWidth * 0.5f, center.y + mouthYOffset + mouthCurve * 0.8f,
                 center.x + mouthWidth, center.y + mouthYOffset
             )
-            drawPath(
-                path = mouthPath,
-                color = eyeColor,
-                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-            )
         }
         FaceStyle.COZY_FOG -> {
             // Cute small open 'o' mouth
@@ -632,6 +529,19 @@ private fun DrawScope.drawKawaiiFace(
             )
         }
     }
+    if (!mouthPath.isEmpty) {
+        drawPath(path = mouthPath, color = eyeColor, style = Stroke(width = strokeWidth, cap = StrokeCap.Round))
+    }
+}
+
+/** Round eye with a small white reflection dot. */
+private fun DrawScope.drawGlossyEye(center: Offset, radius: Float, color: Color) {
+    drawCircle(color = color, center = center, radius = radius)
+    drawCircle(
+        color = Color.White,
+        center = Offset(center.x - radius * 0.35f, center.y - radius * 0.35f),
+        radius = radius * 0.38f
+    )
 }
 
 private fun DrawScope.drawHappyArcEye(center: Offset, radius: Float, strokeWidth: Float, color: Color) {
@@ -656,6 +566,47 @@ private fun DrawScope.drawContentedEye(center: Offset, radius: Float, strokeWidt
         quadraticTo(center.x, center.y + radius * 0.8f, center.x + radius, center.y - radius * 0.3f)
     }
     drawPath(path = path, color = color, style = Stroke(width = strokeWidth, cap = StrokeCap.Round))
+}
+
+/** The foreground cloud shared by most icons, plus its face in Happy Mode. */
+private fun DrawScope.drawMainCloudWithFace(
+    w: Float,
+    h: Float,
+    brush: Brush,
+    offsetY: Float,
+    isHappyMode: Boolean,
+    face: FaceStyle,
+    eyeColor: Color,
+    cheekColor: Color = DEFAULT_CHEEK_COLOR
+) {
+    drawMainCloud(w, h, brush, offsetY)
+    if (isHappyMode) {
+        drawKawaiiFace(
+            center = Offset(w * 0.48f, h * 0.52f + offsetY),
+            faceSize = w * 0.26f,
+            style = face,
+            eyeColor = eyeColor,
+            cheekColor = cheekColor
+        )
+    }
+}
+
+/** Darker cloud behind the main one (cloudy and fog icons). */
+private fun DrawScope.drawBackCloud(w: Float, h: Float) {
+    val brush = Brush.verticalGradient(
+        colors = listOf(Color(0xFF90A4AE), Color(0xFF78909C), Color(0xFF546E7A))
+    )
+    drawCloudPath(
+        leftCenter = Offset(w * 0.40f, h * 0.45f),
+        leftRadius = w * 0.18f,
+        topCenter = Offset(w * 0.58f, h * 0.35f),
+        topRadius = w * 0.22f,
+        rightCenter = Offset(w * 0.78f, h * 0.46f),
+        rightRadius = w * 0.17f,
+        baseRect = Rect(w * 0.26f, h * 0.42f, w * 0.88f, h * 0.58f),
+        cornerRadius = w * 0.10f,
+        brush = brush
+    )
 }
 
 private fun DrawScope.drawMainCloud(
