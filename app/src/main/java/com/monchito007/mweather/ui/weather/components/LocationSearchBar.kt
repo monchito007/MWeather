@@ -1,5 +1,7 @@
 package com.monchito007.mweather.ui.weather.components
 
+import com.monchito007.mweather.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.monchito007.mweather.domain.model.LocationSearchResult
 import com.monchito007.mweather.ui.theme.MWeatherTheme
-import com.monchito007.mweather.ui.weather.AppLanguage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +44,6 @@ fun LocationSearchBar(
     isSearching: Boolean,
     onSelectLocation: (LocationSearchResult) -> Unit,
     modifier: Modifier = Modifier,
-    language: AppLanguage = AppLanguage.SPANISH
 ) {
     SearchBar(
         inputField = {
@@ -54,20 +54,20 @@ fun LocationSearchBar(
                 expanded = isActive,
                 onExpandedChange = onActiveChanged,
                 placeholder = {
-                    Text(text = if (language == AppLanguage.SPANISH) "Buscar ciudad..." else "Search city...")
+                    Text(text = stringResource(R.string.search_hint))
                 },
                 leadingIcon = {
                     if (isActive) {
                         IconButton(onClick = { onActiveChanged(false) }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                contentDescription = if (language == AppLanguage.SPANISH) "Atrás" else "Back"
+                                contentDescription = stringResource(R.string.cd_back)
                             )
                         }
                     } else {
                         Icon(
                             imageVector = Icons.Rounded.Search,
-                            contentDescription = if (language == AppLanguage.SPANISH) "Buscar" else "Search"
+                            contentDescription = stringResource(R.string.cd_search)
                         )
                     }
                 },
@@ -82,7 +82,7 @@ fun LocationSearchBar(
                         IconButton(onClick = { onQueryChanged("") }) {
                             Icon(
                                 imageVector = Icons.Rounded.Clear,
-                                contentDescription = if (language == AppLanguage.SPANISH) "Limpiar" else "Clear"
+                                contentDescription = stringResource(R.string.cd_clear)
                             )
                         }
                     }
@@ -101,7 +101,7 @@ fun LocationSearchBar(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (language == AppLanguage.SPANISH) "No se encontraron ubicaciones" else "No locations found",
+                    text = stringResource(R.string.no_locations_found),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

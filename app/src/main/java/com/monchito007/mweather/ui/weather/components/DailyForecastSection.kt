@@ -1,5 +1,8 @@
 package com.monchito007.mweather.ui.weather.components
 
+import androidx.compose.ui.res.stringArrayResource
+import com.monchito007.mweather.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.monchito007.mweather.domain.model.DailyForecast
 import com.monchito007.mweather.ui.theme.MWeatherTheme
-import com.monchito007.mweather.ui.weather.AppLanguage
 import com.monchito007.mweather.ui.weather.TemperatureUnit
 import com.monchito007.mweather.ui.weather.WeatherUtils
 
@@ -40,7 +42,6 @@ fun DailyForecastSection(
     dailyForecast: List<DailyForecast>,
     unit: TemperatureUnit,
     modifier: Modifier = Modifier,
-    language: AppLanguage = AppLanguage.SPANISH,
     isHappyMode: Boolean = false
 ) {
     if (dailyForecast.isEmpty()) return
@@ -64,7 +65,7 @@ fun DailyForecastSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = if (language == AppLanguage.SPANISH) "Pronóstico de 7 días" else "7-Day forecast",
+                text = stringResource(R.string.daily_forecast_title),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -95,7 +96,6 @@ fun DailyForecastSection(
                         unit = unit,
                         overallMin = overallMin,
                         overallMax = overallMax,
-                        language = language,
                         isHappyMode = isHappyMode
                     )
                 }
@@ -111,7 +111,6 @@ private fun DailyForecastRowItem(
     unit: TemperatureUnit,
     overallMin: Double,
     overallMax: Double,
-    language: AppLanguage = AppLanguage.SPANISH,
     isHappyMode: Boolean = false
 ) {
     Row(
@@ -122,7 +121,7 @@ private fun DailyForecastRowItem(
     ) {
         // Day Name
         Text(
-            text = WeatherUtils.formatDailyDate(day.date, index, language),
+            text = dayLabel(day.date, index),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Bold
             ),
@@ -265,4 +264,14 @@ fun DailyForecastSectionPreview() {
             modifier = Modifier.padding(16.dp)
         )
     }
+}
+
+/** "Today", "Tomorrow", then the short weekday name, in the active app language. */
+@Composable
+private fun dayLabel(date: String, index: Int): String = when (index) {
+    0 -> stringResource(R.string.today)
+    1 -> stringResource(R.string.tomorrow)
+    else -> WeatherUtils.dayOfWeekIndex(date)
+        ?.let { stringArrayResource(R.array.days_of_week_short)[it] }
+        ?: date
 }

@@ -1,5 +1,7 @@
 package com.monchito007.mweather.ui.weather.components
 
+import com.monchito007.mweather.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -41,7 +43,7 @@ fun SettingsMenuButton(
         ) {
             Icon(
                 imageVector = Icons.Rounded.Settings,
-                contentDescription = if (currentLanguage == AppLanguage.SPANISH) "Ajustes" else "Settings",
+                contentDescription = stringResource(R.string.cd_settings),
                 tint = MaterialTheme.colorScheme.onSurface
             )
         }
@@ -80,8 +82,6 @@ fun SettingsDropdownMenu(
     onToggleHappyMode: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val isSpanish = currentLanguage == AppLanguage.SPANISH
-
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
@@ -89,7 +89,7 @@ fun SettingsDropdownMenu(
     ) {
         // --- Sección de Idioma / Language Section ---
         Text(
-            text = if (isSpanish) "Idioma" else "Language",
+            text = stringResource(R.string.language),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -134,7 +134,7 @@ fun SettingsDropdownMenu(
 
         // --- Sección de Tema / Theme Section ---
         Text(
-            text = if (isSpanish) "Modo de tema" else "Theme mode",
+            text = stringResource(R.string.theme_mode),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -144,7 +144,7 @@ fun SettingsDropdownMenu(
         // Option 1: Modo Claro / Light Mode
         DropdownMenuItem(
             text = {
-                Text(text = if (isSpanish) "☀️  Modo claro" else "☀️  Light mode")
+                Text(text = stringResource(R.string.light_mode))
             },
             onClick = { onSelectThemeMode(ThemeMode.LIGHT) },
             trailingIcon = if (currentThemeMode == ThemeMode.LIGHT) {
@@ -161,7 +161,7 @@ fun SettingsDropdownMenu(
         // Option 2: Modo Oscuro / Dark Mode
         DropdownMenuItem(
             text = {
-                Text(text = if (isSpanish) "🌙  Modo oscuro" else "🌙  Dark mode")
+                Text(text = stringResource(R.string.dark_mode))
             },
             onClick = { onSelectThemeMode(ThemeMode.DARK) },
             trailingIcon = if (currentThemeMode == ThemeMode.DARK) {
@@ -178,7 +178,7 @@ fun SettingsDropdownMenu(
         // Option 3: Modo Sistema / System Default
         DropdownMenuItem(
             text = {
-                Text(text = if (isSpanish) "📱  Predeterminado del sistema" else "📱  System default")
+                Text(text = stringResource(R.string.system_default))
             },
             onClick = { onSelectThemeMode(ThemeMode.SYSTEM) },
             trailingIcon = if (currentThemeMode == ThemeMode.SYSTEM) {
@@ -196,7 +196,7 @@ fun SettingsDropdownMenu(
 
         // --- Sección Modo Divertido / Happy Mode Section ---
         Text(
-            text = if (isSpanish) "Estilo visual" else "Visual style",
+            text = stringResource(R.string.visual_style),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -205,7 +205,7 @@ fun SettingsDropdownMenu(
 
         DropdownMenuItem(
             text = {
-                Text(text = if (isSpanish) "😊  Modo divertido (Caras)" else "😊  Happy mode (Faces)")
+                Text(text = stringResource(R.string.happy_mode_faces))
             },
             onClick = { onToggleHappyMode() },
             trailingIcon = if (isHappyMode) {

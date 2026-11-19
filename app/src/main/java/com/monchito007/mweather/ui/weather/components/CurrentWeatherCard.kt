@@ -1,5 +1,7 @@
 package com.monchito007.mweather.ui.weather.components
 
+import com.monchito007.mweather.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.monchito007.mweather.domain.model.CurrentWeather
 import com.monchito007.mweather.ui.theme.MWeatherTheme
-import com.monchito007.mweather.ui.weather.AppLanguage
 import com.monchito007.mweather.ui.weather.TemperatureUnit
 import com.monchito007.mweather.ui.weather.WeatherUtils
 
@@ -50,7 +51,6 @@ fun CurrentWeatherCard(
     minTemp: Double?,
     modifier: Modifier = Modifier,
     precipitationProbability: Int = 0,
-    language: AppLanguage = AppLanguage.SPANISH,
     isHappyMode: Boolean = false
 ) {
     val primaryColor = MaterialTheme.colorScheme.primaryContainer
@@ -95,7 +95,7 @@ fun CurrentWeatherCard(
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = locationName.ifBlank {
-                                if (language == AppLanguage.SPANISH) "Ubicación actual" else "Current Location"
+                                stringResource(R.string.current_location)
                             },
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold
@@ -135,7 +135,7 @@ fun CurrentWeatherCard(
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Text(
-                            text = WeatherUtils.getWeatherDescription(currentWeather.weatherCode, language),
+                            text = stringResource(WeatherUtils.weatherDescriptionRes(currentWeather.weatherCode)),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Medium
                             ),
@@ -175,8 +175,8 @@ fun CurrentWeatherCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (maxTemp != null && minTemp != null) {
-                        val maxLabel = if (language == AppLanguage.SPANISH) "Máx" else "High"
-                        val minLabel = if (language == AppLanguage.SPANISH) "Mín" else "Low"
+                        val maxLabel = stringResource(R.string.temp_max)
+                        val minLabel = stringResource(R.string.temp_min)
                         Text(
                             text = "$maxLabel: ${unit.formatTemperature(maxTemp)} / $minLabel: ${unit.formatTemperature(minTemp)}",
                             style = MaterialTheme.typography.bodyLarge.copy(
@@ -187,7 +187,7 @@ fun CurrentWeatherCard(
                         Spacer(modifier = Modifier.width(16.dp))
                     }
 
-                    val feelsLikeLabel = if (language == AppLanguage.SPANISH) "Sensación" else "Feels like"
+                    val feelsLikeLabel = stringResource(R.string.feels_like)
                     Text(
                         text = "$feelsLikeLabel: ${unit.formatTemperature(currentWeather.apparentTemperature)}",
                         style = MaterialTheme.typography.bodyMedium,
@@ -213,21 +213,21 @@ fun CurrentWeatherCard(
                         // Humidity
                         QuickMetricBadge(
                             icon = Icons.Rounded.WaterDrop,
-                            label = if (language == AppLanguage.SPANISH) "Humedad" else "Humidity",
+                            label = stringResource(R.string.humidity),
                             value = "${currentWeather.humidity}%"
                         )
 
                         // Wind Speed
                         QuickMetricBadge(
                             icon = Icons.Rounded.Air,
-                            label = if (language == AppLanguage.SPANISH) "Viento" else "Wind",
+                            label = stringResource(R.string.wind),
                             value = "${currentWeather.windSpeed.toInt()} km/h"
                         )
 
                         // Rain Chance
                         QuickMetricBadge(
                             icon = Icons.Rounded.Grain,
-                            label = if (language == AppLanguage.SPANISH) "Lluvia" else "Rain",
+                            label = stringResource(R.string.rain),
                             value = "$precipitationProbability%"
                         )
                     }

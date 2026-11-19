@@ -50,7 +50,7 @@ class DeviceLocationProviderImpl(
         return DeviceLocation(
             latitude = location.latitude,
             longitude = location.longitude,
-            name = getCityName(location.latitude, location.longitude) ?: "Ubicación actual"
+            name = getCityName(location.latitude, location.longitude)
         )
     }
 

@@ -1,5 +1,7 @@
 package com.monchito007.mweather.ui.weather
 
+import com.monchito007.mweather.R
+import androidx.compose.ui.res.stringResource
 import android.Manifest
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -43,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -69,6 +72,7 @@ fun WeatherScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     val activeLocationProvider = remember(locationProvider, context) {
         locationProvider ?: DeviceLocationProviderImpl(context.applicationContext)
@@ -82,14 +86,9 @@ fun WeatherScreen(
         if (isGranted) {
             viewModel.fetchDeviceLocation(activeLocationProvider)
         } else {
-            val deniedMsg = if (uiState.language == AppLanguage.SPANISH) {
-                "Permiso de ubicación denegado. Se mostrará la ubicación por defecto."
-            } else {
-                "Location permission denied. Showing default location."
-            }
             Toast.makeText(
                 context,
-                deniedMsg,
+                resources.getString(R.string.location_permission_denied),
                 Toast.LENGTH_SHORT
             ).show()
             viewModel.onLocationPermissionDenied()
@@ -153,12 +152,14 @@ fun WeatherScreenContent(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(uiState.errorMessage) {
-        val errorMsg = uiState.errorMessage
-        if (!errorMsg.isNullOrBlank()) {
-            val retryLabel = if (uiState.language == AppLanguage.SPANISH) "Reintentar" else "Retry"
+    // Resolved here (composable scope) because stringResource can't be called inside the effect.
+    val errorMessage = uiState.errorMessageRes?.let { stringResource(it) }
+    val retryLabel = stringResource(R.string.retry)
+
+    LaunchedEffect(errorMessage) {
+        if (errorMessage != null) {
             val result = snackbarHostState.showSnackbar(
-                message = errorMsg,
+                message = errorMessage,
                 actionLabel = retryLabel,
                 duration = SnackbarDuration.Long
             )
@@ -196,7 +197,6 @@ fun WeatherScreenContent(
                         searchResults = uiState.searchResults,
                         isSearching = uiState.isSearching,
                         onSelectLocation = onSelectLocation,
-                        language = uiState.language,
                         modifier = Modifier.weight(1f)
                     )
 
@@ -207,7 +207,7 @@ fun WeatherScreenContent(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.MyLocation,
-                                contentDescription = if (uiState.language == AppLanguage.SPANISH) "Ubicación actual" else "My Location",
+                                contentDescription = stringResource(R.string.cd_my_location),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -244,7 +244,7 @@ fun WeatherScreenContent(
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = if (uiState.language == AppLanguage.SPANISH) "Cargando clima..." else "Loading weather...",
+                                        text = stringResource(R.string.loading_weather),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -268,12 +268,11 @@ fun WeatherScreenContent(
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 // Error Banner if present alongside cached data
-                                if (!uiState.errorMessage.isNullOrBlank()) {
+                                if (errorMessage != null) {
                                     item {
                                         ErrorCard(
-                                            errorMessage = uiState.errorMessage,
+                                            errorMessage = errorMessage,
                                             onRetry = onRefresh,
-                                            language = uiState.language
                                         )
                                     }
                                 }
@@ -288,7 +287,6 @@ fun WeatherScreenContent(
                                         maxTemp = todayDaily?.maxTemp,
                                         minTemp = todayDaily?.minTemp,
                                         precipitationProbability = precipProb,
-                                        language = uiState.language,
                                         isHappyMode = uiState.isHappyMode
                                     )
                                 }
@@ -299,7 +297,6 @@ fun WeatherScreenContent(
                                         HourlyForecastSection(
                                             hourlyForecast = uiState.hourlyForecast,
                                             unit = uiState.unit,
-                                            language = uiState.language,
                                             isHappyMode = uiState.isHappyMode
                                         )
                                     }
@@ -311,7 +308,6 @@ fun WeatherScreenContent(
                                         DailyForecastSection(
                                             dailyForecast = uiState.dailyForecast,
                                             unit = uiState.unit,
-                                            language = uiState.language,
                                             isHappyMode = uiState.isHappyMode
                                         )
                                     }
@@ -322,7 +318,6 @@ fun WeatherScreenContent(
                                     ExtraMetricsSection(
                                         currentWeather = currentWeather,
                                         precipitationProbability = precipProb,
-                                        language = uiState.language
                                     )
                                 }
                             }
@@ -347,7 +342,7 @@ fun WeatherScreenContent(
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = uiState.errorMessage ?: if (uiState.language == AppLanguage.SPANISH) "No hay datos de clima disponibles" else "No weather data available",
+                                        text = errorMessage ?: stringResource(R.string.no_weather_data_available),
                                         style = MaterialTheme.typography.titleMedium,
                                         textAlign = TextAlign.Center,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -360,7 +355,7 @@ fun WeatherScreenContent(
                                             modifier = Modifier.size(18.dp)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(text = if (uiState.language == AppLanguage.SPANISH) "Reintentar" else "Retry")
+                                        Text(text = stringResource(R.string.retry))
                                     }
                                 }
                             }
@@ -377,7 +372,6 @@ private fun ErrorCard(
     errorMessage: String,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-    language: AppLanguage = AppLanguage.SPANISH
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -411,7 +405,7 @@ private fun ErrorCard(
             IconButton(onClick = onRetry) {
                 Icon(
                     imageVector = Icons.Rounded.Refresh,
-                    contentDescription = if (language == AppLanguage.SPANISH) "Reintentar" else "Retry",
+                    contentDescription = stringResource(R.string.retry),
                     tint = MaterialTheme.colorScheme.onErrorContainer
                 )
             }

@@ -33,6 +33,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    bundle {
+        language {
+            // The in-app language switch needs every language's strings on the device;
+            // otherwise Play only installs the device language's resources.
+            enableSplit = false
+        }
+    }
     buildFeatures {
         compose = true
         buildConfig = true

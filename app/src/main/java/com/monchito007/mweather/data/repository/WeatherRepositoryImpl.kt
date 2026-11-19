@@ -17,12 +17,15 @@ class WeatherRepositoryImpl(
     private val api: OpenMeteoApi = ApiClient.openMeteoApi,
 ) : WeatherRepository {
 
-    override suspend fun searchLocations(query: String): Result<List<LocationSearchResult>> {
+    override suspend fun searchLocations(
+        query: String,
+        languageCode: String
+    ): Result<List<LocationSearchResult>> {
         if (query.isBlank()) {
             return Result.success(emptyList())
         }
         return runCatchingCancellable {
-            api.searchLocations(name = query).results?.map { it.toDomain() } ?: emptyList()
+            api.searchLocations(name = query, language = languageCode).results?.map { it.toDomain() } ?: emptyList()
         }
     }
 

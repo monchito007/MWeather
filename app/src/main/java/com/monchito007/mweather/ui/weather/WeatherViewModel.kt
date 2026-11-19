@@ -1,5 +1,7 @@
 package com.monchito007.mweather.ui.weather
 
+import com.monchito007.mweather.R
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -108,13 +110,14 @@ class WeatherViewModel(
                 state.copy(
                     isLoading = !hasExistingData,
                     isRefreshing = hasExistingData,
-                    errorMessage = null
+                    errorMessageRes = null
                 )
             }
 
             val deviceLocation = activeProvider.getCurrentLocation()
             if (deviceLocation != null) {
-                val locationName = deviceLocation.name ?: "Ubicación actual"
+                // Blank name: the UI shows a localized "Current location" label instead.
+                val locationName = deviceLocation.name.orEmpty()
                 val result = repository.getWeather(
                     latitude = deviceLocation.latitude,
                     longitude = deviceLocation.longitude,
@@ -130,7 +133,7 @@ class WeatherViewModel(
                                 selectedLocation = null,
                                 isLoading = false,
                                 isRefreshing = false,
-                                errorMessage = null
+                                errorMessageRes = null
                             )
                         }
                     },
@@ -139,7 +142,7 @@ class WeatherViewModel(
                             state.copy(
                                 isLoading = false,
                                 isRefreshing = false,
-                                errorMessage = errorMessageFor(error)
+                                errorMessageRes = errorMessageFor(error)
                             )
                         }
                     }
@@ -152,11 +155,7 @@ class WeatherViewModel(
                         state.copy(
                             isLoading = false,
                             isRefreshing = false,
-                            errorMessage = if (_uiState.value.language == AppLanguage.SPANISH) {
-                                "No se pudo obtener la ubicación actual"
-                            } else {
-                                "Could not get current location"
-                            }
+                            errorMessageRes = R.string.error_location_unavailable
                         )
                     }
                 }
@@ -175,7 +174,7 @@ class WeatherViewModel(
                 state.copy(
                     isLoading = !hasExistingData,
                     isRefreshing = hasExistingData,
-                    errorMessage = null
+                    errorMessageRes = null
                 )
             }
 
@@ -192,7 +191,7 @@ class WeatherViewModel(
                             weather = weather,
                             isLoading = false,
                             isRefreshing = false,
-                            errorMessage = null
+                            errorMessageRes = null
                         )
                     }
                 },
@@ -201,7 +200,7 @@ class WeatherViewModel(
                         state.copy(
                             isLoading = false,
                             isRefreshing = false,
-                            errorMessage = errorMessageFor(error)
+                            errorMessageRes = errorMessageFor(error)
                         )
                     }
                 }
@@ -240,7 +239,7 @@ class WeatherViewModel(
             delay(300L)
             _uiState.update { it.copy(isSearching = true) }
 
-            repository.searchLocations(trimmedQuery).fold(
+            repository.searchLocations(trimmedQuery, _uiState.value.language.code).fold(
                 onSuccess = { locations ->
                     _uiState.update { state ->
                         state.copy(
@@ -347,21 +346,15 @@ class WeatherViewModel(
         }
     }
 
-    private fun errorMessageFor(error: Throwable): String {
-        val spanish = _uiState.value.language == AppLanguage.SPANISH
-        return when (error) {
-            is IOException -> if (spanish) {
-                "Sin conexión. Revisa tu red e inténtalo de nuevo."
-            } else {
-                "No connection. Check your network and try again."
-            }
-            else -> if (spanish) "No se pudo cargar el clima." else "Could not load weather data."
-        }
+    @StringRes
+    private fun errorMessageFor(error: Throwable): Int = when (error) {
+        is IOException -> R.string.error_no_connection
+        else -> R.string.error_load_weather
     }
 
     fun clearError() {
         _uiState.update { state ->
-            state.copy(errorMessage = null)
+            state.copy(errorMessageRes = null)
         }
     }
 

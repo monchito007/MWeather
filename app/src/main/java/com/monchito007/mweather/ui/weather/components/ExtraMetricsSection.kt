@@ -1,5 +1,7 @@
 package com.monchito007.mweather.ui.weather.components
 
+import com.monchito007.mweather.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.monchito007.mweather.domain.model.CurrentWeather
 import com.monchito007.mweather.ui.theme.MWeatherTheme
-import com.monchito007.mweather.ui.weather.AppLanguage
 import com.monchito007.mweather.ui.weather.WeatherUtils
 
 @Composable
@@ -40,7 +41,6 @@ fun ExtraMetricsSection(
     currentWeather: CurrentWeather,
     modifier: Modifier = Modifier,
     precipitationProbability: Int = 0,
-    language: AppLanguage = AppLanguage.SPANISH
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
@@ -58,7 +58,7 @@ fun ExtraMetricsSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = if (language == AppLanguage.SPANISH) "Métricas detalladas" else "Detailed metrics",
+                text = stringResource(R.string.detailed_metrics_title),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -80,16 +80,16 @@ fun ExtraMetricsSection(
             ) {
                 MetricCard(
                     icon = Icons.Rounded.WaterDrop,
-                    title = if (language == AppLanguage.SPANISH) "Humedad" else "Humidity",
+                    title = stringResource(R.string.humidity),
                     value = "${currentWeather.humidity}%",
-                    supportingText = if (language == AppLanguage.SPANISH) "Nivel de humedad" else "Humidity level",
+                    supportingText = stringResource(R.string.humidity_level),
                     modifier = Modifier.weight(1f)
                 )
                 MetricCard(
                     icon = Icons.Rounded.Air,
-                    title = if (language == AppLanguage.SPANISH) "Viento" else "Wind speed",
+                    title = stringResource(R.string.wind_speed),
                     value = "${currentWeather.windSpeed} km/h",
-                    supportingText = "Dir: ${currentWeather.windDirection}°",
+                    supportingText = stringResource(R.string.wind_direction, currentWeather.windDirection),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -101,16 +101,16 @@ fun ExtraMetricsSection(
             ) {
                 MetricCard(
                     icon = Icons.Rounded.Compress,
-                    title = if (language == AppLanguage.SPANISH) "Presión" else "Pressure",
+                    title = stringResource(R.string.pressure),
                     value = "${currentWeather.pressure.toInt()} hPa",
-                    supportingText = if (language == AppLanguage.SPANISH) "Presión atmosférica" else "Atmospheric pressure",
+                    supportingText = stringResource(R.string.atmospheric_pressure),
                     modifier = Modifier.weight(1f)
                 )
                 MetricCard(
                     icon = Icons.Rounded.WbSunny,
-                    title = if (language == AppLanguage.SPANISH) "Índice UV" else "UV Index",
+                    title = stringResource(R.string.uv_index),
                     value = "${currentWeather.uvIndex}",
-                    supportingText = WeatherUtils.getUvIndexDescription(currentWeather.uvIndex, language),
+                    supportingText = stringResource(WeatherUtils.uvIndexDescriptionRes(currentWeather.uvIndex)),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -122,16 +122,16 @@ fun ExtraMetricsSection(
             ) {
                 MetricCard(
                     icon = Icons.Rounded.Grain,
-                    title = if (language == AppLanguage.SPANISH) "Prob. de lluvia" else "Rain chance",
+                    title = stringResource(R.string.rain_chance),
                     value = "$precipitationProbability%",
-                    supportingText = if (language == AppLanguage.SPANISH) "${currentWeather.precipitation} mm precipitaciones" else "${currentWeather.precipitation} mm precipitation",
+                    supportingText = stringResource(R.string.precipitation_amount, currentWeather.precipitation.toString()),
                     modifier = Modifier.weight(1f)
                 )
                 MetricCard(
                     icon = Icons.Rounded.Cloud,
-                    title = if (language == AppLanguage.SPANISH) "Nubes" else "Cloud cover",
+                    title = stringResource(R.string.cloud_cover),
                     value = "${currentWeather.cloudCover}%",
-                    supportingText = if (language == AppLanguage.SPANISH) "Cobertura de nubes" else "Cloud coverage",
+                    supportingText = stringResource(R.string.cloud_coverage),
                     modifier = Modifier.weight(1f)
                 )
             }

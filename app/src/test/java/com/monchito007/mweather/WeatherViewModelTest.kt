@@ -190,7 +190,7 @@ class WeatherViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals("Default City", state.weather?.locationName)
-        assertNotNull(state.errorMessage)
+        assertNotNull(state.errorMessageRes)
         assertFalse(state.isRefreshing)
     }
 
@@ -204,7 +204,7 @@ class WeatherViewModelTest {
         assertFalse(state.isLoading)
         assertNotNull(state.weather)
         assertEquals("Default City", state.weather?.locationName)
-        assertNull(state.errorMessage)
+        assertNull(state.errorMessageRes)
     }
 
     @Test
@@ -262,7 +262,7 @@ class WeatherViewModelTest {
         assertEquals("London", state.weather?.locationName)
         assertEquals(51.5074, state.weather?.latitude ?: 0.0, 0.001)
         assertFalse(state.isLoading)
-        assertNull(state.errorMessage)
+        assertNull(state.errorMessageRes)
     }
 
     @Test
@@ -275,7 +275,7 @@ class WeatherViewModelTest {
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertNull(state.weather)
-        assertEquals("No se pudo cargar el clima.", state.errorMessage)
+        assertEquals(R.string.error_load_weather, state.errorMessageRes)
     }
 
     @Test
@@ -389,24 +389,39 @@ class WeatherViewModelTest {
     }
 
     @Test
-    fun testWeatherUtilsLocalization() {
-        // Descriptions
-        assertEquals("Cielo despejado", WeatherUtils.getWeatherDescription(0, AppLanguage.SPANISH))
-        assertEquals("Clear sky", WeatherUtils.getWeatherDescription(0, AppLanguage.ENGLISH))
-        assertEquals("Tormenta", WeatherUtils.getWeatherDescription(95, AppLanguage.SPANISH))
-        assertEquals("Thunderstorm", WeatherUtils.getWeatherDescription(95, AppLanguage.ENGLISH))
+    fun testWeatherUtilsReturnsStringResources() {
+        assertEquals(R.string.weather_clear_sky, WeatherUtils.weatherDescriptionRes(0))
+        assertEquals(R.string.weather_thunderstorm, WeatherUtils.weatherDescriptionRes(95))
+        assertEquals(R.string.weather_thunderstorm_hail, WeatherUtils.weatherDescriptionRes(99))
+        assertEquals(R.string.weather_unknown, WeatherUtils.weatherDescriptionRes(999))
 
-        // Daily date
-        assertEquals("Hoy", WeatherUtils.formatDailyDate("2025-01-01", 0, AppLanguage.SPANISH))
-        assertEquals("Today", WeatherUtils.formatDailyDate("2025-01-01", 0, AppLanguage.ENGLISH))
-        assertEquals("Mañana", WeatherUtils.formatDailyDate("2025-01-02", 1, AppLanguage.SPANISH))
-        assertEquals("Tomorrow", WeatherUtils.formatDailyDate("2025-01-02", 1, AppLanguage.ENGLISH))
+        assertEquals(R.string.uv_low, WeatherUtils.uvIndexDescriptionRes(2.0))
+        assertEquals(R.string.uv_very_high, WeatherUtils.uvIndexDescriptionRes(9.0))
+        assertEquals(R.string.uv_extreme, WeatherUtils.uvIndexDescriptionRes(11.0))
+    }
 
-        // UV Index
-        assertEquals("Bajo", WeatherUtils.getUvIndexDescription(2.0, AppLanguage.SPANISH))
-        assertEquals("Low", WeatherUtils.getUvIndexDescription(2.0, AppLanguage.ENGLISH))
-        assertEquals("Muy Alto", WeatherUtils.getUvIndexDescription(9.0, AppLanguage.SPANISH))
-        assertEquals("Very High", WeatherUtils.getUvIndexDescription(9.0, AppLanguage.ENGLISH))
+    @Test
+    fun testDayOfWeekIndex() {
+        assertEquals(0, WeatherUtils.dayOfWeekIndex("2026-11-22")) // Sunday
+        assertEquals(4, WeatherUtils.dayOfWeekIndex("2026-11-19")) // Thursday
+        assertEquals(6, WeatherUtils.dayOfWeekIndex("2026-11-21T12:00")) // Saturday
+        assertNull(WeatherUtils.dayOfWeekIndex("not-a-date"))
+        assertNull(WeatherUtils.dayOfWeekIndex("2026-02-30"))
+    }
+
+    @Test
+    fun testSearchUsesAppLanguage() = runTest {
+        val viewModel = newViewModel()
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChanged("Paris")
+        advanceUntilIdle()
+        assertEquals("es", fakeRepository.lastSearchLanguage)
+
+        viewModel.setLanguage(AppLanguage.ENGLISH)
+        viewModel.onSearchQueryChanged("London")
+        advanceUntilIdle()
+        assertEquals("en", fakeRepository.lastSearchLanguage)
     }
 
     @Test
@@ -473,10 +488,10 @@ class WeatherViewModelTest {
         val viewModel = newViewModel()
         advanceUntilIdle()
 
-        assertNotNull(viewModel.uiState.value.errorMessage)
+        assertNotNull(viewModel.uiState.value.errorMessageRes)
 
         viewModel.clearError()
-        assertNull(viewModel.uiState.value.errorMessage)
+        assertNull(viewModel.uiState.value.errorMessageRes)
     }
 }
 
@@ -544,7 +559,11 @@ class FakeWeatherRepository : WeatherRepository {
         )
     )
 
-    override suspend fun searchLocations(query: String): Result<List<LocationSearchResult>> {
+    var lastSearchLanguage: String? = null
+        private set
+
+    override suspend fun searchLocations(query: String, languageCode: String): Result<List<LocationSearchResult>> {
+        lastSearchLanguage = languageCode
         if (shouldReturnError) {
             return Result.failure(Exception("Search Failed"))
         }

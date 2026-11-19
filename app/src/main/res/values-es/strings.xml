@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="atmospheric_pressure">Presión atmosférica</string>
+    <string name="cd_back">Atrás</string>
+    <string name="cd_clear">Limpiar</string>
+    <string name="cd_my_location">Ubicación actual</string>
+    <string name="cd_search">Buscar</string>
+    <string name="cd_settings">Ajustes</string>
+    <string name="cloud_cover">Nubes</string>
+    <string name="cloud_coverage">Cobertura de nubes</string>
+    <string name="current_location">Ubicación actual</string>
+    <string name="daily_forecast_title">Pronóstico de 7 días</string>
+    <string name="dark_mode">🌙  Modo oscuro</string>
+    <string name="detailed_metrics_title">Métricas detalladas</string>
+    <string name="error_load_weather">No se pudo cargar el clima.</string>
+    <string name="error_location_unavailable">No se pudo obtener la ubicación actual</string>
+    <string name="error_no_connection">Sin conexión. Revisa tu red e inténtalo de nuevo.</string>
+    <string name="feels_like">Sensación</string>
+    <string name="happy_mode_faces">😊  Modo divertido (Caras)</string>
+    <string name="hourly_forecast_title">Pronóstico por horas</string>
+    <string name="humidity">Humedad</string>
+    <string name="humidity_level">Nivel de humedad</string>
+    <string name="language">Idioma</string>
+    <string name="light_mode">☀️  Modo claro</string>
+    <string name="loading_weather">Cargando clima…</string>
+    <string name="location_permission_denied">Permiso de ubicación denegado. Se mostrará la ubicación por defecto.</string>
+    <string name="no_locations_found">No se encontraron ubicaciones</string>
+    <string name="no_weather_data_available">No hay datos de clima disponibles</string>
+    <string name="precipitation_amount">%1$s mm precipitaciones</string>
+    <string name="pressure">Presión</string>
+    <string name="rain">Lluvia</string>
+    <string name="rain_chance">Prob. de lluvia</string>
+    <string name="retry">Reintentar</string>
+    <string name="search_hint">Buscar ciudad…</string>
+    <string name="system_default">📱  Predeterminado del sistema</string>
+    <string name="temp_max">Máx</string>
+    <string name="temp_min">Mín</string>
+    <string name="theme_mode">Modo de tema</string>
+    <string name="today">Hoy</string>
+    <string name="tomorrow">Mañana</string>
+    <string name="uv_extreme">Extremo</string>
+    <string name="uv_high">Alto</string>
+    <string name="uv_index">Índice UV</string>
+    <string name="uv_low">Bajo</string>
+    <string name="uv_moderate">Moderado</string>
+    <string name="uv_very_high">Muy Alto</string>
+    <string name="visual_style">Estilo visual</string>
+    <string name="weather_clear_sky">Cielo despejado</string>
+    <string name="weather_drizzle">Llovizna</string>
+    <string name="weather_fog">Niebla</string>
+    <string name="weather_freezing_drizzle">Llovizna helada</string>
+    <string name="weather_freezing_rain">Lluvia helada</string>
+    <string name="weather_heavy_rain">Lluvia fuerte</string>
+    <string name="weather_mainly_clear">Principalmente despejado</string>
+    <string name="weather_moderate_rain">Lluvia moderada</string>
+    <string name="weather_overcast">Nublado</string>
+    <string name="weather_partly_cloudy">Parcialmente nublado</string>
+    <string name="weather_rain_showers">Chubascos</string>
+    <string name="weather_slight_rain">Lluvia ligera</string>
+    <string name="weather_snow">Nieve</string>
+    <string name="weather_snow_showers">Chubascos de nieve</string>
+    <string name="weather_thunderstorm">Tormenta</string>
+    <string name="weather_thunderstorm_hail">Tormenta con granizo</string>
+    <string name="weather_unknown">Desconocido</string>
+    <string name="wind">Viento</string>
+    <string name="wind_direction">Dir: %1$d°</string>
+    <string name="wind_speed">Viento</string>
+
+    <!-- Index 0 = Sunday, matching WeatherUtils.dayOfWeekIndex() -->
+    <string-array name="days_of_week_short">
+        <item>Dom</item>
+        <item>Lun</item>
+        <item>Mar</item>
+        <item>Mié</item>
+        <item>Jue</item>
+        <item>Vie</item>
+        <item>Sáb</item>
+    </string-array>
+</resources>

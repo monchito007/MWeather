@@ -86,10 +86,9 @@ fun OpenMeteoForecastDto.toDomain(fallbackLocationName: String = ""): Weather {
         }
     }
 
-    val name = if (fallbackLocationName.isNotBlank()) fallbackLocationName else (timezone ?: "Current Location")
-
     return Weather(
-        locationName = name,
+        // May be blank (unknown name): the UI shows a localized "Current location".
+        locationName = fallbackLocationName,
         latitude = latitude,
         longitude = longitude,
         timezone = timezone ?: "UTC",

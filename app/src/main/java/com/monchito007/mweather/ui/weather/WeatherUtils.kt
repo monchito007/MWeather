@@ -1,6 +1,6 @@
 package com.monchito007.mweather.ui.weather
 
-import android.os.Build
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AcUnit
 import androidx.compose.material.icons.rounded.Cloud
@@ -11,11 +11,13 @@ import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material.icons.rounded.WbCloudy
 import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.ui.graphics.vector.ImageVector
-import java.text.SimpleDateFormat
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.util.Locale
+import com.monchito007.mweather.R
+import java.util.Calendar
 
+/**
+ * Pure helpers: they return resource IDs, never translated text, so the UI resolves them
+ * with stringResource() in whatever language is active.
+ */
 object WeatherUtils {
 
     fun getWeatherIcon(weatherCode: Int, isDay: Boolean = true): ImageVector {
@@ -32,125 +34,57 @@ object WeatherUtils {
         }
     }
 
-    fun getWeatherDescription(weatherCode: Int, language: AppLanguage = AppLanguage.SPANISH): String {
-        return when (language) {
-            AppLanguage.SPANISH -> when (weatherCode) {
-                0 -> "Cielo despejado"
-                1 -> "Principalmente despejado"
-                2 -> "Parcialmente nublado"
-                3 -> "Nublado"
-                45, 48 -> "Niebla"
-                51, 53, 55 -> "Llovizna"
-                56, 57 -> "Llovizna helada"
-                61 -> "Lluvia ligera"
-                63 -> "Lluvia moderada"
-                65 -> "Lluvia fuerte"
-                66, 67 -> "Lluvia helada"
-                71, 73, 75, 77 -> "Nieve"
-                80, 81, 82 -> "Chubascos"
-                85, 86 -> "Chubascos de nieve"
-                95 -> "Tormenta"
-                96, 99 -> "Tormenta con granizo"
-                else -> "Desconocido"
-            }
-            AppLanguage.ENGLISH -> when (weatherCode) {
-                0 -> "Clear sky"
-                1 -> "Mainly clear"
-                2 -> "Partly cloudy"
-                3 -> "Overcast"
-                45, 48 -> "Foggy"
-                51, 53, 55 -> "Drizzle"
-                56, 57 -> "Freezing drizzle"
-                61 -> "Slight rain"
-                63 -> "Moderate rain"
-                65 -> "Heavy rain"
-                66, 67 -> "Freezing rain"
-                71, 73, 75, 77 -> "Snow"
-                80, 81, 82 -> "Rain showers"
-                85, 86 -> "Snow showers"
-                95 -> "Thunderstorm"
-                96, 99 -> "Thunderstorm with hail"
-                else -> "Unknown"
-            }
+    @StringRes
+    fun weatherDescriptionRes(weatherCode: Int): Int = when (weatherCode) {
+        0 -> R.string.weather_clear_sky
+        1 -> R.string.weather_mainly_clear
+        2 -> R.string.weather_partly_cloudy
+        3 -> R.string.weather_overcast
+        45, 48 -> R.string.weather_fog
+        51, 53, 55 -> R.string.weather_drizzle
+        56, 57 -> R.string.weather_freezing_drizzle
+        61 -> R.string.weather_slight_rain
+        63 -> R.string.weather_moderate_rain
+        65 -> R.string.weather_heavy_rain
+        66, 67 -> R.string.weather_freezing_rain
+        71, 73, 75, 77 -> R.string.weather_snow
+        80, 81, 82 -> R.string.weather_rain_showers
+        85, 86 -> R.string.weather_snow_showers
+        95 -> R.string.weather_thunderstorm
+        96, 99 -> R.string.weather_thunderstorm_hail
+        else -> R.string.weather_unknown
+    }
+
+    @StringRes
+    fun uvIndexDescriptionRes(uvIndex: Double): Int = when {
+        uvIndex < 3.0 -> R.string.uv_low
+        uvIndex < 6.0 -> R.string.uv_moderate
+        uvIndex < 8.0 -> R.string.uv_high
+        uvIndex < 11.0 -> R.string.uv_very_high
+        else -> R.string.uv_extreme
+    }
+
+    fun formatHourlyTime(timeStr: String): String =
+        if (timeStr.contains("T")) timeStr.substringAfter("T").take(5) else timeStr
+
+    /**
+     * Day of week of an ISO date ("2026-11-19") as an index into R.array.days_of_week_short
+     * (0 = Sunday … 6 = Saturday), or null if the date can't be parsed.
+     * Uses Calendar instead of java.time so it works on minSdk 24 without desugaring.
+     */
+    fun dayOfWeekIndex(dateStr: String): Int? {
+        val parts = dateStr.take(10).split("-").mapNotNull { it.toIntOrNull() }
+        if (parts.size != 3) return null
+        val (year, month, day) = parts
+        val calendar = Calendar.getInstance().apply {
+            clear()
+            isLenient = false
+            set(year, month - 1, day)
         }
-    }
-
-    fun getWeatherDescriptionSpanishEnglish(weatherCode: Int): String {
-        return getWeatherDescription(weatherCode, AppLanguage.SPANISH)
-    }
-
-    fun formatHourlyTime(timeStr: String): String {
         return try {
-            if (timeStr.contains("T")) {
-                val timePart = timeStr.substringAfter("T")
-                timePart.take(5) // e.g. "12:00"
-            } else {
-                timeStr
-            }
-        } catch (e: Exception) {
-            timeStr
-        }
-    }
-
-    fun formatDailyDate(dateStr: String, index: Int, language: AppLanguage = AppLanguage.SPANISH): String {
-        if (index == 0) return if (language == AppLanguage.SPANISH) "Hoy" else "Today"
-        if (index == 1) return if (language == AppLanguage.SPANISH) "Mañana" else "Tomorrow"
-
-        return try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val parsed = LocalDate.parse(dateStr)
-                if (language == AppLanguage.SPANISH) {
-                    when (parsed.dayOfWeek) {
-                        DayOfWeek.MONDAY -> "Lun"
-                        DayOfWeek.TUESDAY -> "Mar"
-                        DayOfWeek.WEDNESDAY -> "Mié"
-                        DayOfWeek.THURSDAY -> "Jue"
-                        DayOfWeek.FRIDAY -> "Vie"
-                        DayOfWeek.SATURDAY -> "Sáb"
-                        DayOfWeek.SUNDAY -> "Dom"
-                        else -> dateStr
-                    }
-                } else {
-                    when (parsed.dayOfWeek) {
-                        DayOfWeek.MONDAY -> "Mon"
-                        DayOfWeek.TUESDAY -> "Tue"
-                        DayOfWeek.WEDNESDAY -> "Wed"
-                        DayOfWeek.THURSDAY -> "Thu"
-                        DayOfWeek.FRIDAY -> "Fri"
-                        DayOfWeek.SATURDAY -> "Sat"
-                        DayOfWeek.SUNDAY -> "Sun"
-                        else -> dateStr
-                    }
-                }
-            } else {
-                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val date = sdf.parse(dateStr)
-                val locale = if (language == AppLanguage.SPANISH) Locale.forLanguageTag("es") else Locale.ENGLISH
-                val dayFormat = SimpleDateFormat("EEE", locale)
-                date?.let { dayFormat.format(it).replaceFirstChar { char -> char.uppercase() } } ?: dateStr
-            }
-        } catch (e: Exception) {
-            dateStr
-        }
-    }
-
-    fun getUvIndexDescription(uvIndex: Double, language: AppLanguage = AppLanguage.SPANISH): String {
-        return if (language == AppLanguage.SPANISH) {
-            when {
-                uvIndex < 3.0 -> "Bajo"
-                uvIndex < 6.0 -> "Moderado"
-                uvIndex < 8.0 -> "Alto"
-                uvIndex < 11.0 -> "Muy Alto"
-                else -> "Extremo"
-            }
-        } else {
-            when {
-                uvIndex < 3.0 -> "Low"
-                uvIndex < 6.0 -> "Moderate"
-                uvIndex < 8.0 -> "High"
-                uvIndex < 11.0 -> "Very High"
-                else -> "Extreme"
-            }
+            calendar.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY
+        } catch (_: IllegalArgumentException) {
+            null
         }
     }
 }

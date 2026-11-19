@@ -1,5 +1,6 @@
 package com.monchito007.mweather.ui.weather
 
+import androidx.annotation.StringRes
 import com.monchito007.mweather.domain.model.CurrentWeather
 import com.monchito007.mweather.domain.model.DailyForecast
 import com.monchito007.mweather.domain.model.HourlyForecast
@@ -48,7 +49,8 @@ data class WeatherUiState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val weather: Weather? = null,
-    val errorMessage: String? = null,
+    /** Error to show, as a string resource so it follows the active app language. */
+    @StringRes val errorMessageRes: Int? = null,
     val searchQuery: String = "",
     val searchResults: List<LocationSearchResult> = emptyList(),
     val isSearching: Boolean = false,

@@ -1,5 +1,7 @@
 package com.monchito007.mweather.ui.weather.components
 
+import com.monchito007.mweather.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.monchito007.mweather.domain.model.HourlyForecast
 import com.monchito007.mweather.ui.theme.MWeatherTheme
-import com.monchito007.mweather.ui.weather.AppLanguage
 import com.monchito007.mweather.ui.weather.TemperatureUnit
 import com.monchito007.mweather.ui.weather.WeatherUtils
 
@@ -39,7 +40,6 @@ fun HourlyForecastSection(
     hourlyForecast: List<HourlyForecast>,
     unit: TemperatureUnit,
     modifier: Modifier = Modifier,
-    language: AppLanguage = AppLanguage.SPANISH,
     isHappyMode: Boolean = false
 ) {
     if (hourlyForecast.isEmpty()) return
@@ -60,7 +60,7 @@ fun HourlyForecastSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = if (language == AppLanguage.SPANISH) "Pronóstico por horas" else "Hourly forecast",
+                text = stringResource(R.string.hourly_forecast_title),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -80,7 +80,6 @@ fun HourlyForecastSection(
                 HourlyItemCard(
                     hourly = hour,
                     unit = unit,
-                    language = language,
                     isHappyMode = isHappyMode
                 )
             }
@@ -93,7 +92,6 @@ private fun HourlyItemCard(
     hourly: HourlyForecast,
     unit: TemperatureUnit,
     modifier: Modifier = Modifier,
-    language: AppLanguage = AppLanguage.SPANISH,
     isHappyMode: Boolean = false
 ) {
     ElevatedCard(
@@ -150,7 +148,7 @@ private fun HourlyItemCard(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.WaterDrop,
-                        contentDescription = if (language == AppLanguage.SPANISH) "Lluvia" else "Rain",
+                        contentDescription = stringResource(R.string.rain),
                         tint = MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.size(12.dp)
                     )
