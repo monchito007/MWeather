@@ -2,7 +2,6 @@ package com.monchito007.mweather.data.api
 
 import com.monchito007.mweather.BuildConfig
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -10,9 +9,9 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    private val moshi: Moshi = Moshi.Builder()
-        .addLast(KotlinJsonAdapterFactory())
-        .build()
+    // DTOs use @JsonClass(generateAdapter = true): adapters are generated at compile time
+    // by KSP, so no kotlin-reflect at runtime (smaller APK, faster parsing, R8-safe).
+    private val moshi: Moshi = Moshi.Builder().build()
 
     private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
