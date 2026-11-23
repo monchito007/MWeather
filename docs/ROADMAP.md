@@ -6,7 +6,7 @@ Propuestas de mejora pendientes. Última revisión: 19/11/2026.
 
 - [ ] **Ciudades favoritas**: guardar varias ciudades y pasar de una a otra deslizando. Requiere volver a añadir Room (se eliminó por no usarse).
 - [x] **Caché offline**: guardar el último pronóstico y mostrarlo sin conexión, con un indicador de "actualizado hace X min". Guardado como JSON en `files/last_forecast.json`.
-- [ ] **Widget** para la pantalla de inicio (Jetpack Glance).
+- [x] **Widget** para la pantalla de inicio (Jetpack Glance). Usa la caché, así que funciona sin conexión.
 - [ ] **Calidad del aire y polen** con la [API de Air Quality de Open-Meteo](https://open-meteo.com/en/docs/air-quality-api) (gratuita).
 - [ ] **Alertas de lluvia** mediante notificaciones (WorkManager).
 - [ ] **Diseño para tablet y plegables**. Requiere volver a añadir Material3 Adaptive (se eliminó por no usarse).
