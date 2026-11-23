@@ -19,6 +19,7 @@
     <string name="error_no_connection">No connection. Check your network and try again.</string>
     <string name="feels_like">Feels like</string>
     <string name="happy_mode_faces">😊  Happy mode (Faces)</string>
+    <string name="hourly_forecast_count">Next %1$d h</string>
     <string name="hourly_forecast_title">Hourly forecast</string>
     <string name="humidity">Humidity</string>
     <string name="humidity_level">Humidity level</string>

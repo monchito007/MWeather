@@ -85,6 +85,7 @@ class WeatherScreenContentTest {
         composeRule.onNodeWithText("Sensación: 12°").assertExists()
         composeRule.onNodeWithText("Parcialmente nublado").assertExists()
         composeRule.onNodeWithText("Pronóstico por horas").assertExists()
+        composeRule.onNodeWithText("Próximas 6 h").assertExists()
 
         scrollTo("Pronóstico de 7 días")
         composeRule.onNodeWithText("Hoy").assertExists()
@@ -99,6 +100,7 @@ class WeatherScreenContentTest {
         composeRule.onNodeWithText("Feels like: 12°").assertExists()
         composeRule.onNodeWithText("Partly cloudy").assertExists()
         composeRule.onNodeWithText("Hourly forecast").assertExists()
+        composeRule.onNodeWithText("Next 6 h").assertExists()
 
         scrollTo("7-Day forecast")
         composeRule.onNodeWithText("Today").assertExists()
