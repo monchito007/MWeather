@@ -47,6 +47,15 @@ object WeatherUtils {
     fun dayOfMonth(dateStr: String): Int? =
         dateStr.take(10).split("-").getOrNull(2)?.toIntOrNull()?.takeIf { it in 1..31 }
 
+    /**
+     * Compass point the wind comes from, as an index into R.array.compass_points_short
+     * (0 = N, 1 = NE … 7 = NW). Each point covers 45°, centred on it (N = 338°–22°).
+     */
+    fun compassPointIndex(degrees: Int): Int {
+        val normalized = ((degrees % 360) + 360) % 360
+        return ((normalized + 22) / 45) % 8
+    }
+
     fun formatHourlyTime(timeStr: String): String =
         if (timeStr.contains("T")) timeStr.substringAfter("T").take(5) else timeStr
 

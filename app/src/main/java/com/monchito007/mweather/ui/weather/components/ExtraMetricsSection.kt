@@ -3,8 +3,11 @@ package com.monchito007.mweather.ui.weather.components
 import kotlin.math.roundToInt
 import com.monchito007.mweather.ui.weather.orNoData
 import com.monchito007.mweather.R
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,12 +16,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Air
 import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.Compress
 import androidx.compose.material.icons.rounded.Grain
+import androidx.compose.material.icons.rounded.Navigation
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material.icons.rounded.WbSunny
@@ -30,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -91,8 +97,13 @@ fun ExtraMetricsSection(
                     icon = Icons.Rounded.Air,
                     title = stringResource(R.string.wind_speed),
                     value = currentWeather.windSpeed.orNoData { "$it km/h" },
-                    supportingText = currentWeather.windDirection?.let { stringResource(R.string.wind_direction, it) }
-                        ?: WeatherUtils.NO_DATA,
+                    supportingText = currentWeather.windDirection?.let {
+                        val point = stringArrayResource(R.array.compass_points_short)[WeatherUtils.compassPointIndex(it)]
+                        stringResource(R.string.wind_direction, point, it)
+                    } ?: WeatherUtils.NO_DATA,
+                    supportingLeading = currentWeather.windDirection?.let { degrees ->
+                        { WindCompass(degrees) }
+                    },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -150,7 +161,8 @@ private fun MetricCard(
     title: String,
     value: String,
     supportingText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    supportingLeading: (@Composable () -> Unit)? = null
 ) {
     ElevatedCard(
         shape = RoundedCornerShape(20.dp),
@@ -196,12 +208,42 @@ private fun MetricCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
-                text = supportingText,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (supportingLeading != null) {
+                    supportingLeading()
+                    Spacer(modifier = Modifier.width(6.dp))
+                }
+                Text(
+                    text = supportingText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+            }
         }
+    }
+}
+
+/**
+ * Small compass: a ring with an arrow pointing where the wind blows TO. [degrees] is the
+ * meteorological direction the wind comes FROM (0 = from the north), hence the extra 180°.
+ */
+@Composable
+private fun WindCompass(degrees: Int, modifier: Modifier = Modifier) {
+    val from = stringArrayResource(R.array.compass_points)[WeatherUtils.compassPointIndex(degrees)]
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(22.dp)
+            .border(1.5.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Navigation,
+            contentDescription = stringResource(R.string.wind_from, from),
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .size(14.dp)
+                .rotate(degrees + 180f)
+        )
     }
 }
 
