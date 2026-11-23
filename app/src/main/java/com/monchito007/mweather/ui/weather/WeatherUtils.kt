@@ -43,6 +43,10 @@ object WeatherUtils {
         else -> R.string.uv_extreme
     }
 
+    /** Day of month of an ISO date or date-time ("2026-11-24T05:00" -> 24), or null if invalid. */
+    fun dayOfMonth(dateStr: String): Int? =
+        dateStr.take(10).split("-").getOrNull(2)?.toIntOrNull()?.takeIf { it in 1..31 }
+
     fun formatHourlyTime(timeStr: String): String =
         if (timeStr.contains("T")) timeStr.substringAfter("T").take(5) else timeStr
 

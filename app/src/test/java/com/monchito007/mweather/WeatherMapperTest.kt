@@ -4,6 +4,7 @@ import com.monchito007.mweather.data.dto.CurrentWeatherDto
 import com.monchito007.mweather.data.dto.DailyWeatherDto
 import com.monchito007.mweather.data.dto.HourlyWeatherDto
 import com.monchito007.mweather.data.dto.OpenMeteoForecastDto
+import com.monchito007.mweather.data.mapper.firstUpcomingHourIndex
 import com.monchito007.mweather.data.mapper.toDomain
 import com.monchito007.mweather.domain.model.WeatherCodeInfo
 import com.monchito007.mweather.ui.weather.TemperatureUnit
@@ -76,6 +77,40 @@ class WeatherMapperTest {
         assertEquals(63, current.weatherCode)
         assertEquals(1019.4, current.pressure ?: 0.0, 0.001)
         assertEquals(false, current.isDay)
+    }
+
+    @Test
+    fun hourlyForecastStartsAtTheCurrentHourAndKeepsEveryLaterHour() {
+        val times = List(48) { h -> "2026-11-${23 + h / 24}T${(h % 24).toString().padStart(2, '0')}:00" }
+        val dto = OpenMeteoForecastDto(
+            latitude = 0.0,
+            longitude = 0.0,
+            current = CurrentWeatherDto(time = "2026-11-23T14:15"),
+            hourly = HourlyWeatherDto(time = times)
+        )
+
+        val hourly = dto.toDomain().hourly
+
+        assertEquals("2026-11-23T14:00", hourly.first().time) // the hour in progress is kept
+        assertEquals("2026-11-24T23:00", hourly.last().time)  // nothing cut at 24 hours
+        assertEquals(34, hourly.size)
+    }
+
+    @Test
+    fun firstUpcomingHourIndexHandlesEdgeCases() {
+        val times = listOf("2026-11-23T00:00", "2026-11-23T01:00", "2026-11-23T02:00")
+
+        assertEquals(0, firstUpcomingHourIndex(times, null))              // no current time: keep all
+        assertEquals(0, firstUpcomingHourIndex(times, "2026-11-23T00:00"))
+        assertEquals(2, firstUpcomingHourIndex(times, "2026-11-23T02:45"))
+        assertEquals(3, firstUpcomingHourIndex(times, "2026-11-24T09:00")) // all past: empty
+    }
+
+    @Test
+    fun dayOfMonthIsReadFromIsoTimes() {
+        assertEquals(24, WeatherUtils.dayOfMonth("2026-11-24T05:00"))
+        assertEquals(1, WeatherUtils.dayOfMonth("2026-12-01"))
+        assertNull(WeatherUtils.dayOfMonth("garbage"))
     }
 
     @Test

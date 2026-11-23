@@ -17,6 +17,7 @@
     <string name="error_no_connection">Sin conexión. Revisa tu red e inténtalo de nuevo.</string>
     <string name="feels_like">Sensación</string>
     <string name="happy_mode_faces">😊  Modo divertido (Caras)</string>
+    <string name="hourly_forecast_count">Próximas %1$d h</string>
     <string name="hourly_forecast_title">Pronóstico por horas</string>
     <string name="humidity">Humedad</string>
     <string name="humidity_level">Nivel de humedad</string>

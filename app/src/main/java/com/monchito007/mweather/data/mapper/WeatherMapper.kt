@@ -43,7 +43,8 @@ fun OpenMeteoForecastDto.toDomain(fallbackLocationName: String = ""): Weather {
 
     val hourlyList = mutableListOf<HourlyForecast>()
     hourly?.time?.let { times ->
-        for (i in times.indices) {
+        val firstHour = firstUpcomingHourIndex(times, currentDto?.time)
+        for (i in firstHour until times.size) {
             val code = hourly.weatherCode?.getOrNull(i) ?: WeatherCodeInfo.UNKNOWN_CODE
             val codeInfo = WeatherCodeInfo.fromCode(code)
             val timeStr = times[i]
@@ -96,4 +97,17 @@ fun OpenMeteoForecastDto.toDomain(fallbackLocationName: String = ""): Weather {
         hourly = hourlyList,
         daily = dailyList
     )
+}
+
+/**
+ * Index of the hour that contains [currentTime], so the forecast skips hours already past.
+ * The API's hourly list always starts at 00:00 of today. Both values are ISO local times in
+ * the location's timezone ("2026-11-23T14:15" vs "2026-11-23T14:00"), so comparing the
+ * "yyyy-MM-ddTHH" prefix as text is enough. Without a current time, nothing is skipped.
+ */
+internal fun firstUpcomingHourIndex(times: List<String>, currentTime: String?): Int {
+    if (currentTime.isNullOrBlank()) return 0
+    val currentHour = currentTime.take(13)
+    val index = times.indexOfFirst { it.take(13) >= currentHour }
+    return if (index == -1) times.size else index
 }

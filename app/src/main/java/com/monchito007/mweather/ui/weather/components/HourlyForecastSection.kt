@@ -1,6 +1,7 @@
 package com.monchito007.mweather.ui.weather.components
 
 import com.monchito007.mweather.R
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -50,7 +51,9 @@ fun HourlyForecastSection(
         // Section Header
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 8.dp)
         ) {
             Icon(
                 imageVector = Icons.Rounded.Schedule,
@@ -66,17 +69,23 @@ fun HourlyForecastSection(
                 ),
                 color = MaterialTheme.colorScheme.onBackground
             )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = stringResource(R.string.hourly_forecast_count, hourlyForecast.size),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Hourly LazyRow
+        // Hourly LazyRow: every hour the API gives from now on (up to the end of the 7 days)
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(hourlyForecast.take(24), key = { it.time }) { hour ->
+            items(hourlyForecast, key = { it.time }) { hour ->
                 HourlyItemCard(
                     hourly = hour,
                     unit = unit,
@@ -109,6 +118,16 @@ private fun HourlyItemCard(
                 .fillMaxWidth()
                 .padding(vertical = 12.dp, horizontal = 8.dp)
         ) {
+            // Short weekday and day of month ("Lun 24") on every card, so the day is always clear
+            val weekday = WeatherUtils.dayOfWeekIndex(hourly.time)
+                ?.let { stringArrayResource(R.array.days_of_week_short)[it] }
+            val dayOfMonth = WeatherUtils.dayOfMonth(hourly.time)
+            Text(
+                text = listOfNotNull(weekday, dayOfMonth).joinToString(" ").ifEmpty { " " },
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.primary
+            )
+
             // Hour
             Text(
                 text = WeatherUtils.formatHourlyTime(hourly.time),
@@ -175,7 +194,8 @@ private fun HourlyItemCard(
 fun HourlyForecastSectionPreview() {
     val sampleHourly = List(12) { i ->
         HourlyForecast(
-            time = "2025-01-01T${10 + i}:00",
+            // 18:00 to 05:00, crossing midnight to show the weekday label
+            time = "2025-01-0${1 + (18 + i) / 24}T${((18 + i) % 24).toString().padStart(2, '0')}:00",
             temperature = 18.0 + i,
             weatherCode = if (i % 3 == 0) 61 else 0,
             weatherDescription = "Clear",
