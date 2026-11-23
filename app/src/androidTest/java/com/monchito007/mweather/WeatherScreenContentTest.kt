@@ -117,6 +117,14 @@ class WeatherScreenContentTest {
     }
 
     @Test
+    fun windDirection_showsCompassPointDegreesAndArrow() {
+        setContent(WeatherUiState(weather = sampleWeather())) // wind from 250° = west
+
+        scrollTo("O 250°")
+        composeRule.onNodeWithContentDescription("Viento del oeste").assertExists()
+    }
+
+    @Test
     fun missingLocationName_showsLocalizedCurrentLocation() {
         setContent(WeatherUiState(weather = sampleWeather().copy(locationName = "")))
 

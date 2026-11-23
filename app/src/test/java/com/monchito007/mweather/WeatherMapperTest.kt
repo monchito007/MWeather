@@ -79,6 +79,17 @@ class WeatherMapperTest {
     }
 
     @Test
+    fun windDegreesMapToTheNearestCompassPoint() {
+        val expected = mapOf(
+            0 to 0, 22 to 0, 23 to 1, 45 to 1, 90 to 2, 135 to 3, 180 to 4,
+            210 to 5, 250 to 6, 315 to 7, 337 to 7, 338 to 0, 360 to 0, -45 to 7
+        )
+        expected.forEach { (degrees, index) ->
+            assertEquals("$degrees°", index, WeatherUtils.compassPointIndex(degrees))
+        }
+    }
+
+    @Test
     fun missingValuesAreFormattedAsDash() {
         assertEquals("—", WeatherUtils.NO_DATA)
         assertEquals("—", TemperatureUnit.CELSIUS.formatTemperature(null))
