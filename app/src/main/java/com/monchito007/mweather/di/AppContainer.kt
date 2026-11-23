@@ -2,12 +2,14 @@ package com.monchito007.mweather.di
 
 import android.content.Context
 import com.monchito007.mweather.data.api.ApiClient
+import com.monchito007.mweather.data.cache.FileForecastCache
 import com.monchito007.mweather.data.location.DeviceLocationProviderImpl
 import com.monchito007.mweather.data.preferences.DataStoreUserPreferencesRepository
 import com.monchito007.mweather.data.preferences.UserPreferencesRepository
 import com.monchito007.mweather.data.repository.WeatherRepositoryImpl
 import com.monchito007.mweather.domain.location.DeviceLocationProvider
 import com.monchito007.mweather.domain.repository.WeatherRepository
+import java.io.File
 
 /**
  * The app's dependency graph, built by hand. Every long-lived object is created here,
@@ -26,7 +28,10 @@ class DefaultAppContainer(context: Context) : AppContainer {
     private val appContext = context.applicationContext
 
     override val weatherRepository: WeatherRepository by lazy {
-        WeatherRepositoryImpl(ApiClient.openMeteoApi)
+        WeatherRepositoryImpl(
+            api = ApiClient.openMeteoApi,
+            cache = FileForecastCache(File(appContext.filesDir, "last_forecast.json"))
+        )
     }
 
     override val userPreferencesRepository: UserPreferencesRepository by lazy {

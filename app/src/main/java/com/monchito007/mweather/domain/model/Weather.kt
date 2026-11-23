@@ -8,4 +8,6 @@ data class Weather(
     val current: CurrentWeather,
     val hourly: List<HourlyForecast>,
     val daily: List<DailyForecast>,
+    /** When this forecast was downloaded (epoch millis), or null if unknown (previews, tests). */
+    val fetchedAtMillis: Long? = null,
 )

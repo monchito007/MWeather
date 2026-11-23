@@ -125,6 +125,18 @@ class WeatherMapperTest {
     }
 
     @Test
+    fun updatedAgoPicksTheLargestUnit() {
+        val now = 10_000_000_000L
+        val minute = 60_000L
+        assertEquals(R.string.updated_just_now to 0L, WeatherUtils.updatedAgo(now - 30_000L, now))
+        assertEquals(R.string.updated_minutes_ago to 5L, WeatherUtils.updatedAgo(now - 5 * minute, now))
+        assertEquals(R.string.updated_hours_ago to 3L, WeatherUtils.updatedAgo(now - 200 * minute, now))
+        assertEquals(R.string.updated_days_ago to 2L, WeatherUtils.updatedAgo(now - 2 * 24 * 60 * minute, now))
+        // A clock set backwards never shows a negative time
+        assertEquals(R.string.updated_just_now to 0L, WeatherUtils.updatedAgo(now + minute, now))
+    }
+
+    @Test
     fun missingValuesAreFormattedAsDash() {
         assertEquals("—", WeatherUtils.NO_DATA)
         assertEquals("—", TemperatureUnit.CELSIUS.formatTemperature(null))

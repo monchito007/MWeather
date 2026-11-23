@@ -280,7 +280,8 @@ fun WeatherScreenContent(
                                         maxTemp = todayDaily?.maxTemp,
                                         minTemp = todayDaily?.minTemp,
                                         precipitationProbability = precipProb,
-                                        isHappyMode = uiState.isHappyMode
+                                        isHappyMode = uiState.isHappyMode,
+                                        fetchedAtMillis = uiState.weather?.fetchedAtMillis
                                     )
                                 }
 

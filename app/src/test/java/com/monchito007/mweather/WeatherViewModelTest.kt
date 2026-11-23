@@ -103,6 +103,51 @@ class WeatherViewModelTest {
     }
 
     @Test
+    fun testCachedWeatherIsShownAtOnceThenRefreshedFromNetwork() = runTest {
+        fakeRepository.cachedWeather = fakeRepository.weatherAt(48.85, 2.35, "Paris, France")
+        val viewModel = bareViewModel()
+
+        assertTrue(viewModel.startInitialLoad()) // still asks for the device location
+        val shown = viewModel.uiState.value
+        assertEquals("Paris, France", shown.weather?.locationName)
+        assertFalse(shown.isLoading) // no full-screen spinner over the cached data
+
+        viewModel.fetchDeviceLocation()
+        advanceUntilIdle()
+        assertEquals("Madrid", viewModel.uiState.value.weather?.locationName)
+    }
+
+    @Test
+    fun testOfflineStartKeepsCachedWeatherAndShowsError() = runTest {
+        fakeRepository.cachedWeather = fakeRepository.weatherAt(48.85, 2.35, "Paris, France")
+        fakeRepository.shouldReturnError = true
+        fakePreferences.state.value = UserPreferences(lastLocation = SavedLocation(48.85, 2.35, "Paris, France"))
+        val viewModel = bareViewModel()
+
+        viewModel.startInitialLoad()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("Paris, France", state.weather?.locationName)
+        assertNotNull(state.errorMessageRes)
+        assertFalse(state.isRefreshing)
+    }
+
+    @Test
+    fun testPermissionDeniedRefreshesCachedCityInsteadOfDefault() = runTest {
+        fakeRepository.cachedWeather = fakeRepository.weatherAt(48.85, 2.35, "Paris, France")
+        val viewModel = bareViewModel()
+        viewModel.startInitialLoad()
+
+        viewModel.onLocationPermissionDenied()
+        advanceUntilIdle()
+
+        assertEquals(1, fakeRepository.weatherRequests)
+        assertEquals("Paris, France", viewModel.uiState.value.weather?.locationName)
+        assertEquals(48.85, fakeRepository.lastRequestedLatitude ?: 0.0, 0.001)
+    }
+
+    @Test
     fun testSavedSettingsAreRestoredOnStart() = runTest {
         fakePreferences.state.value = UserPreferences(
             unit = TemperatureUnit.FAHRENHEIT,
@@ -510,6 +555,16 @@ class FakeWeatherRepository : WeatherRepository {
     var shouldReturnError = false
     var weatherRequests = 0
         private set
+    var lastRequestedLatitude: Double? = null
+        private set
+
+    /** What [getCachedWeather] returns: the forecast "saved on disk" by a previous run. */
+    var cachedWeather: Weather? = null
+
+    override suspend fun getCachedWeather(): Weather? = cachedWeather
+
+    fun weatherAt(latitude: Double, longitude: Double, name: String): Weather =
+        sampleWeather.copy(locationName = name, latitude = latitude, longitude = longitude)
 
     private val sampleWeather = Weather(
         locationName = "Default City",
@@ -583,6 +638,7 @@ class FakeWeatherRepository : WeatherRepository {
         locationName: String
     ): Result<Weather> {
         weatherRequests++
+        lastRequestedLatitude = latitude
         if (shouldReturnError) {
             return Result.failure(Exception("Network Error"))
         }
