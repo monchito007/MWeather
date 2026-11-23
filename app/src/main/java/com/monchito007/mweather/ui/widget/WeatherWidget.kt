@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.update
 import java.util.Locale
 
 /**
- * Home-screen widget with the current weather, plus the next hours when it's wide enough.
+ * Home-screen widget with the current weather, plus the next 5 days when it's wide enough.
  *
  * It shows the forecast cached by the app, so it works offline. When that forecast is older
  * than [REFRESH_AFTER_MILLIS] it first downloads a new one for the same place; the system
@@ -154,11 +154,11 @@ private fun WidgetContent(model: WidgetUiModel?, noDataText: String) {
                 text = noDataText,
                 style = TextStyle(color = GlanceTheme.colors.onSurface, fontSize = 14.sp)
             )
-        } else if (LocalSize.current.width >= 250.dp && model.hours.isNotEmpty()) {
+        } else if (LocalSize.current.width >= 250.dp && model.days.isNotEmpty()) {
             Row(modifier = GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 CurrentWeather(model, modifier = GlanceModifier.defaultWeight())
                 Spacer(modifier = GlanceModifier.width(8.dp))
-                model.hours.forEach { hour -> HourColumn(hour) }
+                model.days.forEach { day -> DayColumn(day) }
             }
         } else {
             CurrentWeather(model)
@@ -210,23 +210,27 @@ private fun CurrentWeather(model: WidgetUiModel, modifier: GlanceModifier = Glan
 }
 
 @Composable
-private fun HourColumn(hour: WidgetHour) {
+private fun DayColumn(day: WidgetDay) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = GlanceModifier.padding(horizontal = 4.dp)
     ) {
         Text(
-            text = hour.time,
+            text = day.label,
             style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = 11.sp)
         )
-        Text(text = hour.emoji, style = TextStyle(fontSize = 18.sp))
+        Text(text = day.emoji, style = TextStyle(fontSize = 18.sp))
         Text(
-            text = hour.temperature,
+            text = day.maxTemp,
             style = TextStyle(
                 color = GlanceTheme.colors.onSurface,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
             )
+        )
+        Text(
+            text = day.minTemp,
+            style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = 12.sp)
         )
     }
 }

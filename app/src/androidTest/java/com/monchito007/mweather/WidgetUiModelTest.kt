@@ -29,7 +29,7 @@ class WidgetUiModelTest {
     }
 
     @Test
-    fun spanishModelHasLocalizedTextsAndNextHours() {
+    fun spanishModelHasLocalizedTextsAndNextFiveDays() {
         val model = weather().toWidgetUiModel(context("es"), TemperatureUnit.CELSIUS, now)
 
         assertEquals("Madrid", model.locationName)
@@ -38,8 +38,11 @@ class WidgetUiModelTest {
         assertEquals("Cielo despejado", model.description)
         assertEquals("18° / 7°", model.highLow)
         assertEquals("Actualizado hace 5 min", model.updatedAgo)
-        assertEquals(5, model.hours.size) // only the next 5 of the 8 hours
-        assertEquals("14:00", model.hours.first().time)
+        // Today (the 23rd) is left out: the next 5 of the remaining 6 days, from Tuesday
+        assertEquals(listOf("Mar", "Mié", "Jue", "Vie", "Sáb"), model.days.map { it.label })
+        assertEquals("19°", model.days.first().maxTemp)
+        assertEquals("8°", model.days.first().minTemp)
+        assertEquals("🌧️", model.days.first().emoji)
     }
 
     @Test
@@ -82,13 +85,13 @@ class WidgetUiModelTest {
                 isDay = true
             )
         },
-        daily = listOf(
+        daily = List(7) { i ->
             DailyForecast(
-                date = "2026-11-23",
-                weatherCode = 0,
-                weatherDescription = "Clear sky",
-                maxTemp = 18.0,
-                minTemp = 7.0,
+                date = "2026-11-${23 + i}", // Monday 23rd to Sunday 29th
+                weatherCode = if (i == 0) 0 else 63,
+                weatherDescription = if (i == 0) "Clear sky" else "Moderate rain",
+                maxTemp = 18.0 + i,
+                minTemp = 7.0 + i,
                 precipitationSum = 0.0,
                 precipitationProbabilityMax = 0,
                 windSpeedMax = 10.0,
@@ -96,7 +99,7 @@ class WidgetUiModelTest {
                 sunrise = null,
                 sunset = null
             )
-        ),
+        },
         fetchedAtMillis = now - 5 * 60_000L
     )
 }

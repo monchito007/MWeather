@@ -14,13 +14,13 @@ data class WidgetUiModel(
     val description: String,
     val highLow: String,
     val updatedAgo: String,
-    val hours: List<WidgetHour>
+    val days: List<WidgetDay>
 )
 
-data class WidgetHour(val time: String, val emoji: String, val temperature: String)
+data class WidgetDay(val label: String, val emoji: String, val maxTemp: String, val minTemp: String)
 
-/** Number of upcoming hours shown in the wide widget. */
-private const val WIDGET_HOURS = 5
+/** Number of days after today shown in the wide widget. */
+private const val WIDGET_DAYS = 5
 
 /** [context] must already be localized to the in-app language (see [WeatherWidget]). */
 fun Weather.toWidgetUiModel(context: Context, unit: TemperatureUnit, nowMillis: Long): WidgetUiModel {
@@ -36,11 +36,15 @@ fun Weather.toWidgetUiModel(context: Context, unit: TemperatureUnit, nowMillis: 
         description = context.getString(WeatherUtils.weatherDescriptionRes(current.weatherCode)),
         highLow = "${unit.formatTemperature(today?.maxTemp)} / ${unit.formatTemperature(today?.minTemp)}",
         updatedAgo = updatedAgo,
-        hours = hourly.take(WIDGET_HOURS).map { hour ->
-            WidgetHour(
-                time = WeatherUtils.formatHourlyTime(hour.time),
-                emoji = weatherEmoji(hour.weatherCode, hour.isDay),
-                temperature = unit.formatTemperature(hour.temperature)
+        // The first daily entry is today, already summarised by the high/low above.
+        days = daily.drop(1).take(WIDGET_DAYS).map { day ->
+            WidgetDay(
+                label = WeatherUtils.dayOfWeekIndex(day.date)
+                    ?.let { context.resources.getStringArray(R.array.days_of_week_short)[it] }
+                    ?: day.date,
+                emoji = weatherEmoji(day.weatherCode, isDay = true),
+                maxTemp = unit.formatTemperature(day.maxTemp),
+                minTemp = unit.formatTemperature(day.minTemp)
             )
         }
     )
