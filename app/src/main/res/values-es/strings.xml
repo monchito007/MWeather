@@ -39,6 +39,10 @@
     <string name="theme_mode">Modo de tema</string>
     <string name="today">Hoy</string>
     <string name="tomorrow">Mañana</string>
+    <string name="updated_just_now">Actualizado ahora mismo</string>
+    <string name="updated_minutes_ago">Actualizado hace %1$d min</string>
+    <string name="updated_hours_ago">Actualizado hace %1$d h</string>
+    <string name="updated_days_ago">Actualizado hace %1$d d</string>
     <string name="uv_extreme">Extremo</string>
     <string name="uv_high">Alto</string>
     <string name="uv_index">Índice UV</string>

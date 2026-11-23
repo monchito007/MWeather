@@ -8,9 +8,18 @@ data class OpenMeteoForecastDto(
     @Json(name = "latitude") val latitude: Double,
     @Json(name = "longitude") val longitude: Double,
     @Json(name = "timezone") val timezone: String? = null,
+    @Json(name = "utc_offset_seconds") val utcOffsetSeconds: Int? = null,
     @Json(name = "current") val current: CurrentWeatherDto? = null,
     @Json(name = "hourly") val hourly: HourlyWeatherDto? = null,
     @Json(name = "daily") val daily: DailyWeatherDto? = null
+)
+
+/** The last forecast downloaded, saved to disk so it can be shown without a connection. */
+@JsonClass(generateAdapter = true)
+data class CachedForecastDto(
+    @Json(name = "fetched_at_millis") val fetchedAtMillis: Long,
+    @Json(name = "location_name") val locationName: String,
+    @Json(name = "forecast") val forecast: OpenMeteoForecastDto
 )
 
 @JsonClass(generateAdapter = true)

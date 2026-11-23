@@ -42,6 +42,12 @@ class WeatherViewModel(
 
     private val storedPreferences = CompletableDeferred<UserPreferences>()
 
+    /**
+     * True once a forecast has been downloaded in this session. The weather on screen may
+     * instead come from the offline cache, which must still be refreshed from the network.
+     */
+    private var hasFreshWeather = false
+
     init {
         viewModelScope.launch {
             val prefs = preferencesRepository.preferences.first()
@@ -59,7 +65,8 @@ class WeatherViewModel(
     }
 
     /**
-     * Called by the screen on first composition. Shows the loading indicator, then:
+     * Called by the screen on first composition. Shows the last cached forecast at once if there
+     * is one (otherwise the loading indicator), then:
      * - if the user had picked a city last time, loads it and returns false;
      * - otherwise returns true, meaning the screen must request the device location.
      * Only the first call per ViewModel lifetime does anything (rotation-safe).
@@ -72,6 +79,12 @@ class WeatherViewModel(
         if (initialLoadStarted) return false
         initialLoadStarted = true
 
+        // Show the last forecast right away; the network load below then refreshes it.
+        val cached = repository.getCachedWeather()
+        if (cached != null && _uiState.value.weather == null) {
+            _uiState.update { it.copy(weather = cached, isLoading = false) }
+        }
+
         if (savedLocation != null) {
             loadWeather(savedLocation.latitude, savedLocation.longitude, savedLocation.name)
             return false
@@ -79,10 +92,13 @@ class WeatherViewModel(
         return true
     }
 
-    /** Location permission was denied: fall back to the default city if nothing is shown yet. */
+    /**
+     * Location permission was denied: refresh whatever is shown (the cached city), or load the
+     * default city if nothing is shown yet. Already-downloaded weather is left as it is.
+     */
     fun onLocationPermissionDenied() {
-        if (_uiState.value.weather == null) {
-            loadWeather()
+        if (!hasFreshWeather) {
+            refreshWeather()
         }
     }
 
@@ -91,8 +107,8 @@ class WeatherViewModel(
     fun fetchDeviceLocation(onPermissionDenied: (() -> Unit)? = null) {
         if (!locationProvider.hasLocationPermission()) {
             onPermissionDenied?.invoke()
-            if (_uiState.value.weather == null) {
-                loadWeather()
+            if (!hasFreshWeather) {
+                refreshWeather()
             }
             return
         }
@@ -118,6 +134,7 @@ class WeatherViewModel(
                 )
                 result.fold(
                     onSuccess = { weather ->
+                        hasFreshWeather = true
                         // The user chose "my location": stop restoring the last searched city.
                         viewModelScope.launch { preferencesRepository.saveLastLocation(null) }
                         _uiState.update { state ->
@@ -141,8 +158,8 @@ class WeatherViewModel(
                     }
                 )
             } else {
-                if (_uiState.value.weather == null) {
-                    loadWeather()
+                if (!hasFreshWeather) {
+                    refreshWeather()
                 } else {
                     _uiState.update { state ->
                         state.copy(
@@ -179,6 +196,7 @@ class WeatherViewModel(
 
             result.fold(
                 onSuccess = { weather ->
+                    hasFreshWeather = true
                     _uiState.update { state ->
                         state.copy(
                             weather = weather,

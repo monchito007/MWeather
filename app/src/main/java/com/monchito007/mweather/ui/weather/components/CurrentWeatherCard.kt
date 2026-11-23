@@ -31,7 +31,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -53,7 +58,8 @@ fun CurrentWeatherCard(
     minTemp: Double?,
     modifier: Modifier = Modifier,
     precipitationProbability: Int? = null,
-    isHappyMode: Boolean = false
+    isHappyMode: Boolean = false,
+    fetchedAtMillis: Long? = null
 ) {
     val primaryColor = MaterialTheme.colorScheme.primaryContainer
     val secondaryColor = MaterialTheme.colorScheme.tertiaryContainer
@@ -117,6 +123,10 @@ fun CurrentWeatherCard(
                             fontSize = 14.sp
                         )
                     }
+                }
+
+                if (fetchedAtMillis != null) {
+                    UpdatedAgoText(fetchedAtMillis)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -293,4 +303,24 @@ fun CurrentWeatherCardPreview() {
             modifier = Modifier.padding(16.dp)
         )
     }
+}
+
+/**
+ * "Updated 5 min ago". The current time is re-read when the forecast changes and whenever the
+ * app comes back to the foreground, which is when an old value would otherwise be noticed.
+ */
+@Composable
+private fun UpdatedAgoText(fetchedAtMillis: Long) {
+    var nowMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LifecycleResumeEffect(fetchedAtMillis) {
+        nowMillis = System.currentTimeMillis()
+        onPauseOrDispose { }
+    }
+    val (textRes, amount) = WeatherUtils.updatedAgo(fetchedAtMillis, nowMillis)
+    Text(
+        text = stringResource(textRes, amount),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+        modifier = Modifier.padding(start = 30.dp, top = 2.dp) // aligned with the location name
+    )
 }

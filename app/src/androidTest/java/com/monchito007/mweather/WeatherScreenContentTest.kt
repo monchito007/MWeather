@@ -128,6 +128,21 @@ class WeatherScreenContentTest {
     }
 
     @Test
+    fun downloadTime_isShownAsUpdatedAgo() {
+        val fiveMinutesAgo = System.currentTimeMillis() - 5 * 60_000L
+        setContent(WeatherUiState(weather = sampleWeather().copy(fetchedAtMillis = fiveMinutesAgo)))
+
+        composeRule.onNodeWithText("Actualizado hace 5 min").assertExists()
+    }
+
+    @Test
+    fun unknownDownloadTime_showsNoUpdatedText() {
+        setContent(WeatherUiState(weather = sampleWeather()))
+
+        composeRule.onNodeWithText("Actualizado", substring = true).assertDoesNotExist()
+    }
+
+    @Test
     fun missingLocationName_showsLocalizedCurrentLocation() {
         setContent(WeatherUiState(weather = sampleWeather().copy(locationName = "")))
 

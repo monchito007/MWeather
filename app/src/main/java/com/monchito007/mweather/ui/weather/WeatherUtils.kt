@@ -56,6 +56,20 @@ object WeatherUtils {
         return ((normalized + 22) / 45) % 8
     }
 
+    /**
+     * How long ago a forecast was downloaded, as a string resource and the number to put in it:
+     * "just now" under a minute, then minutes, hours and finally days.
+     */
+    fun updatedAgo(fetchedAtMillis: Long, nowMillis: Long): Pair<Int, Long> {
+        val minutes = ((nowMillis - fetchedAtMillis) / 60_000L).coerceAtLeast(0L)
+        return when {
+            minutes < 1 -> R.string.updated_just_now to 0L
+            minutes < 60 -> R.string.updated_minutes_ago to minutes
+            minutes < 24 * 60 -> R.string.updated_hours_ago to minutes / 60
+            else -> R.string.updated_days_ago to minutes / (24 * 60)
+        }
+    }
+
     fun formatHourlyTime(timeStr: String): String =
         if (timeStr.contains("T")) timeStr.substringAfter("T").take(5) else timeStr
 
