@@ -86,6 +86,7 @@ class WeatherScreenContentTest {
         composeRule.onNodeWithText("Parcialmente nublado").assertExists()
         composeRule.onNodeWithText("Pronóstico por horas").assertExists()
         composeRule.onNodeWithText("Próximas 6 h").assertExists()
+        composeRule.onAllNodesWithText("Jue 19").onFirst().assertExists() // 19/11/2026 is a Thursday
 
         scrollTo("Pronóstico de 7 días")
         composeRule.onNodeWithText("Hoy").assertExists()

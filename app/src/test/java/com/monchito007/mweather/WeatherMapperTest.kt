@@ -107,6 +107,13 @@ class WeatherMapperTest {
     }
 
     @Test
+    fun dayOfMonthIsReadFromIsoTimes() {
+        assertEquals(24, WeatherUtils.dayOfMonth("2026-11-24T05:00"))
+        assertEquals(1, WeatherUtils.dayOfMonth("2026-12-01"))
+        assertNull(WeatherUtils.dayOfMonth("garbage"))
+    }
+
+    @Test
     fun missingValuesAreFormattedAsDash() {
         assertEquals("—", WeatherUtils.NO_DATA)
         assertEquals("—", TemperatureUnit.CELSIUS.formatTemperature(null))

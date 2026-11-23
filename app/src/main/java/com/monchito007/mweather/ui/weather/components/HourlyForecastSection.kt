@@ -118,16 +118,12 @@ private fun HourlyItemCard(
                 .fillMaxWidth()
                 .padding(vertical = 12.dp, horizontal = 8.dp)
         ) {
-            // Weekday on the first hour of each new day, so it's clear where days change.
-            // Blank on the other cards so every card keeps the same height.
-            val weekday = if (WeatherUtils.formatHourlyTime(hourly.time) == "00:00") {
-                WeatherUtils.dayOfWeekIndex(hourly.time)
-                    ?.let { stringArrayResource(R.array.days_of_week_short)[it] }
-            } else {
-                null
-            }
+            // Short weekday and day of month ("Lun 24") on every card, so the day is always clear
+            val weekday = WeatherUtils.dayOfWeekIndex(hourly.time)
+                ?.let { stringArrayResource(R.array.days_of_week_short)[it] }
+            val dayOfMonth = WeatherUtils.dayOfMonth(hourly.time)
             Text(
-                text = weekday ?: " ",
+                text = listOfNotNull(weekday, dayOfMonth).joinToString(" ").ifEmpty { " " },
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.primary
             )
