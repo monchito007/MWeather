@@ -17,6 +17,8 @@ import com.monchito007.mweather.ui.theme.MWeatherTheme
 import com.monchito007.mweather.ui.weather.ThemeMode
 import com.monchito007.mweather.ui.weather.WeatherScreen
 import com.monchito007.mweather.ui.weather.WeatherViewModel
+import com.monchito007.mweather.ui.widget.WeatherWidget
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -47,5 +49,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * Leaving the app is when the home screen becomes visible again: redraw the widget so it
+     * shows the forecast just downloaded and any unit or language change.
+     */
+    override fun onStop() {
+        super.onStop()
+        val app = application as MWeatherApplication
+        app.applicationScope.launch { WeatherWidget.updateAll(app) }
     }
 }
