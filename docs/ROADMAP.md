@@ -1,6 +1,6 @@
 # Hoja de ruta de MWeather
 
-Propuestas de mejora pendientes. Última revisión: 19/11/2026.
+Propuestas de mejora pendientes. Última revisión: 24/11/2026.
 
 ## Funcionalidades nuevas
 
@@ -10,6 +10,7 @@ Propuestas de mejora pendientes. Última revisión: 19/11/2026.
 - [x] **Calidad del aire y polen** con la [API de Air Quality de Open-Meteo](https://open-meteo.com/en/docs/air-quality-api) (gratuita). Índice europeo, PM2.5, PM10, NO₂ y O₃; el polen solo aparece en Europa y en temporada.
 - [ ] **Alertas de lluvia** mediante notificaciones (WorkManager).
 - [ ] **Diseño para tablet y plegables**. Requiere volver a añadir Material3 Adaptive (se eliminó por no usarse).
+- [ ] **Flecha de dirección del viento en todas las indicaciones de viento**: hoy solo la lleva la tarjeta "Viento" de las métricas detalladas. Faltaría en la tarjeta principal (ya hay dato), en cada hora (pedir `wind_direction_10m` por hora) y, si se muestra el viento por día, con `wind_direction_10m_dominant`. Reutilizar el componente `WindCompass`.
 
 ## Mejoras técnicas
 
