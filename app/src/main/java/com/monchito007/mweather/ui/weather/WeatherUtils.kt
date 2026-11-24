@@ -5,6 +5,7 @@ import com.monchito007.mweather.R
 import com.monchito007.mweather.domain.model.DailyForecast
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.roundToInt
 
 /**
  * Pure helpers: they return resource IDs, never translated text, so the UI resolves them
@@ -111,6 +112,23 @@ object WeatherUtils {
         val hours = parts.getOrNull(0)?.toIntOrNull() ?: return null
         val minutes = parts.getOrNull(1)?.toIntOrNull() ?: return null
         return if (hours in 0..23 && minutes in 0..59) hours * 60 + minutes else null
+    }
+
+    /** "24 km" from 1 km up, "800 m" below. */
+    fun formatVisibility(metres: Double): String =
+        if (metres >= 1000) "${(metres / 1000).roundToInt()} km" else "${metres.roundToInt()} m"
+
+    @StringRes
+    fun visibilityLevelRes(metres: Double): Int = when {
+        metres < 1000 -> R.string.visibility_very_low
+        metres < 5000 -> R.string.visibility_reduced
+        else -> R.string.visibility_good
+    }
+
+    /** Seconds as whole hours and remaining minutes, e.g. 16200.0 -> (4, 30). */
+    fun hoursAndMinutes(seconds: Double): Pair<Int, Int> {
+        val minutes = (seconds / 60).roundToInt().coerceAtLeast(0)
+        return minutes / 60 to minutes % 60
     }
 
     fun formatHourlyTime(timeStr: String): String =

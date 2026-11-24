@@ -25,7 +25,9 @@ import androidx.compose.material.icons.rounded.Air
 import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.Compress
 import androidx.compose.material.icons.rounded.Grain
+import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Navigation
+import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.NightsStay
 import androidx.compose.material.icons.rounded.WbTwilight
 import androidx.compose.material.icons.rounded.GridView
@@ -47,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import com.monchito007.mweather.domain.model.CurrentWeather
 import com.monchito007.mweather.domain.model.DailyForecast
 import com.monchito007.mweather.ui.theme.MWeatherTheme
+import com.monchito007.mweather.ui.weather.TemperatureUnit
 import com.monchito007.mweather.ui.weather.WeatherUtils
 
 @Composable
@@ -56,6 +59,7 @@ fun ExtraMetricsSection(
     precipitationProbability: Int? = null,
     today: DailyForecast? = null,
     tomorrow: DailyForecast? = null,
+    unit: TemperatureUnit = TemperatureUnit.CELSIUS,
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
@@ -99,7 +103,9 @@ fun ExtraMetricsSection(
                     icon = Icons.Rounded.WaterDrop,
                     title = stringResource(R.string.humidity),
                     value = currentWeather.humidity.orNoData { "$it%" },
-                    supportingText = stringResource(R.string.humidity_level),
+                    supportingText = currentWeather.dewPoint
+                        ?.let { stringResource(R.string.dew_point, unit.formatTemperature(it)) }
+                        ?: stringResource(R.string.humidity_level),
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
@@ -175,7 +181,42 @@ fun ExtraMetricsSection(
                 )
             }
 
-            // Row 4: Sunrise (with hours of daylight) and Sunset (with tomorrow's change in daylight)
+            // Row 4: Visibility and today's sunshine (with hours of rain)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+            ) {
+                MetricCard(
+                    icon = Icons.Rounded.Visibility,
+                    title = stringResource(R.string.visibility),
+                    value = currentWeather.visibility.orNoData { WeatherUtils.formatVisibility(it) },
+                    supportingText = currentWeather.visibility
+                        ?.let { stringResource(WeatherUtils.visibilityLevelRes(it)) }
+                        ?: WeatherUtils.NO_DATA,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                )
+                MetricCard(
+                    icon = Icons.Rounded.LightMode,
+                    title = stringResource(R.string.sunshine),
+                    value = today?.sunshineDuration.orNoData {
+                        val (h, m) = WeatherUtils.hoursAndMinutes(it)
+                        stringResource(R.string.duration_h_min, h, m)
+                    },
+                    supportingText = today?.precipitationHours?.let { hours ->
+                        if (hours > 0) stringResource(R.string.rain_hours, "${hours.roundToInt()}")
+                        else stringResource(R.string.no_rain)
+                    } ?: WeatherUtils.NO_DATA,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                )
+            }
+
+            // Row 5: Sunrise (with hours of daylight) and Sunset (with tomorrow's change in daylight)
             if (today?.sunrise != null || today?.sunset != null) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -323,7 +364,9 @@ fun ExtraMetricsSectionPreview() {
         precipitation = 1.2,
         pressure = 1012.0,
         cloudCover = 85,
-        uvIndex = 4.5
+        uvIndex = 4.5,
+        visibility = 24000.0,
+        dewPoint = 12.3
     )
 
     MWeatherTheme {

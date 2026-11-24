@@ -17,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Air
+import androidx.compose.material.icons.rounded.Opacity
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material3.CardDefaults
@@ -27,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,6 +38,8 @@ import com.monchito007.mweather.domain.model.HourlyForecast
 import com.monchito007.mweather.ui.theme.MWeatherTheme
 import com.monchito007.mweather.ui.weather.TemperatureUnit
 import com.monchito007.mweather.ui.weather.WeatherUtils
+import com.monchito007.mweather.ui.weather.orNoData
+import kotlin.math.roundToInt
 
 @Composable
 fun HourlyForecastSection(
@@ -192,7 +197,40 @@ private fun HourlyItemCard(
                 snowCm = hourly.snowfall,
                 keepLineWhenDry = true
             )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Wind and humidity for that hour
+            HourlyDetail(
+                icon = Icons.Rounded.Air,
+                description = stringResource(R.string.wind),
+                text = hourly.windSpeed.orNoData { "${it.roundToInt()} km/h" }
+            )
+            HourlyDetail(
+                icon = Icons.Rounded.Opacity,
+                description = stringResource(R.string.humidity),
+                text = hourly.humidity.orNoData { "$it%" }
+            )
         }
+    }
+}
+
+@Composable
+private fun HourlyDetail(icon: ImageVector, description: String, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = icon,
+            contentDescription = description,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(11.dp)
+        )
+        Spacer(modifier = Modifier.width(2.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1
+        )
     }
 }
 

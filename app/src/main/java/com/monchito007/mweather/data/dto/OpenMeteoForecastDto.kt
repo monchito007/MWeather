@@ -36,7 +36,9 @@ data class CurrentWeatherDto(
     @Json(name = "wind_speed_10m") val windSpeed10m: Double? = null,
     @Json(name = "wind_direction_10m") val windDirection10m: Double? = null,
     @Json(name = "wind_gusts_10m") val windGusts10m: Double? = null,
-    @Json(name = "uv_index") val uvIndex: Double? = null
+    @Json(name = "uv_index") val uvIndex: Double? = null,
+    @Json(name = "visibility") val visibility: Double? = null,
+    @Json(name = "dew_point_2m") val dewPoint2m: Double? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -64,5 +66,7 @@ data class DailyWeatherDto(
     @Json(name = "wind_speed_10m_max") val windSpeed10mMax: List<Double?>? = null,
     @Json(name = "uv_index_max") val uvIndexMax: List<Double?>? = null,
     @Json(name = "sunrise") val sunrise: List<String>? = null,
-    @Json(name = "sunset") val sunset: List<String>? = null
+    @Json(name = "sunset") val sunset: List<String>? = null,
+    @Json(name = "sunshine_duration") val sunshineDuration: List<Double?>? = null,
+    @Json(name = "precipitation_hours") val precipitationHours: List<Double?>? = null
 )

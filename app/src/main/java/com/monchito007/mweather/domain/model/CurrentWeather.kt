@@ -14,5 +14,9 @@ data class CurrentWeather(
     val precipitation: Double?,
     val pressure: Double?,
     val cloudCover: Int?,
-    val uvIndex: Double? = null
+    val uvIndex: Double? = null,
+    /** Metres. */
+    val visibility: Double? = null,
+    /** °C. */
+    val dewPoint: Double? = null
 )

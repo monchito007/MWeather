@@ -14,5 +14,9 @@ data class DailyForecast(
     val sunrise: String?,
     val sunset: String?,
     /** Snow in cm (precipitationSum is its water equivalent in mm). */
-    val snowfallSum: Double? = null
+    val snowfallSum: Double? = null,
+    /** Seconds of sunshine. */
+    val sunshineDuration: Double? = null,
+    /** Hours with precipitation. */
+    val precipitationHours: Double? = null
 )

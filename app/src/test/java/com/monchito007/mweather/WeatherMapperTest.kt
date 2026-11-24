@@ -219,4 +219,36 @@ class WeatherMapperTest {
         assertEquals(1.4, weather.hourly.first().snowfall ?: 0.0, 0.001)
         assertEquals(8.75, weather.daily.first().snowfallSum ?: 0.0, 0.001)
     }
+
+    @Test
+    fun visibilityDewPointSunshineAndRainHoursAreMapped() {
+        val dto = OpenMeteoForecastDto(
+            latitude = 40.4,
+            longitude = -3.7,
+            current = CurrentWeatherDto(time = "2026-11-19T10:00", visibility = 800.0, dewPoint2m = 7.5),
+            daily = DailyWeatherDto(
+                time = listOf("2026-11-19"),
+                sunshineDuration = listOf(16200.0),
+                precipitationHours = listOf(3.0)
+            )
+        )
+
+        val weather = dto.toDomain("Madrid")
+
+        assertEquals(800.0, weather.current.visibility ?: 0.0, 0.001)
+        assertEquals(7.5, weather.current.dewPoint ?: 0.0, 0.001)
+        assertEquals(16200.0, weather.daily.first().sunshineDuration ?: 0.0, 0.001)
+        assertEquals(3.0, weather.daily.first().precipitationHours ?: 0.0, 0.001)
+    }
+
+    @Test
+    fun visibilityAndDurationFormatting() {
+        assertEquals("24 km", WeatherUtils.formatVisibility(24140.0))
+        assertEquals("800 m", WeatherUtils.formatVisibility(800.0))
+        assertEquals(R.string.visibility_very_low, WeatherUtils.visibilityLevelRes(800.0))
+        assertEquals(R.string.visibility_reduced, WeatherUtils.visibilityLevelRes(3000.0))
+        assertEquals(R.string.visibility_good, WeatherUtils.visibilityLevelRes(24140.0))
+        assertEquals(4 to 30, WeatherUtils.hoursAndMinutes(16200.0))
+        assertEquals(0 to 0, WeatherUtils.hoursAndMinutes(0.0))
+    }
 }
