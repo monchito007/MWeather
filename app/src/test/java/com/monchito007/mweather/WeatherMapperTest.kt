@@ -39,6 +39,7 @@ class WeatherMapperTest {
             assertNull(humidity)
             assertNull(windSpeed)
             assertNull(windDirection)
+            assertNull(windGusts)
             assertNull(precipitation)
             assertNull(pressure) // was a made-up 1013.25 before
             assertNull(cloudCover)
@@ -188,11 +189,11 @@ class WeatherMapperTest {
     }
 
     @Test
-    fun currentUvIndexComesFromCurrentNotFromTodaysPeak() {
+    fun currentUvAndGustsComeFromCurrentNotFromTodaysPeak() {
         val dto = OpenMeteoForecastDto(
             latitude = 40.4,
             longitude = -3.7,
-            current = CurrentWeatherDto(time = "2026-11-19T22:00", uvIndex = 0.0),
+            current = CurrentWeatherDto(time = "2026-11-19T22:00", uvIndex = 0.0, windGusts10m = 31.7),
             daily = DailyWeatherDto(time = listOf("2026-11-19"), uvIndexMax = listOf(6.2))
         )
 
@@ -200,5 +201,6 @@ class WeatherMapperTest {
 
         assertEquals(0.0, weather.current.uvIndex ?: -1.0, 0.001)
         assertEquals(6.2, weather.daily.first().uvIndexMax ?: 0.0, 0.001)
+        assertEquals(31.7, weather.current.windGusts ?: 0.0, 0.001)
     }
 }

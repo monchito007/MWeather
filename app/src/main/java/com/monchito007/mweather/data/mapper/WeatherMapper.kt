@@ -69,6 +69,7 @@ fun OpenMeteoForecastDto.toDomain(
         humidity = currentDto?.relativeHumidity2m?.toInt(),
         windSpeed = currentDto?.windSpeed10m,
         windDirection = currentDto?.windDirection10m?.toInt(),
+        windGusts = currentDto?.windGusts10m,
         weatherCode = weatherCode,
         weatherDescription = weatherCodeInfo.description,
         isDay = (currentDto?.isDay ?: 1) == 1,

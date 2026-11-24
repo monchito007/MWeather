@@ -8,6 +8,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -86,17 +88,21 @@ fun ExtraMetricsSection(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Row 1: Humidity and Wind Speed
+            // Row 1: Humidity and Wind Speed (same height, the wind card has an extra gusts line)
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
             ) {
                 MetricCard(
                     icon = Icons.Rounded.WaterDrop,
                     title = stringResource(R.string.humidity),
                     value = currentWeather.humidity.orNoData { "$it%" },
                     supportingText = stringResource(R.string.humidity_level),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
                 )
                 MetricCard(
                     icon = Icons.Rounded.Air,
@@ -109,7 +115,10 @@ fun ExtraMetricsSection(
                     supportingLeading = currentWeather.windDirection?.let { degrees ->
                         { WindCompass(degrees) }
                     },
-                    modifier = Modifier.weight(1f)
+                    extraText = currentWeather.windGusts?.let { stringResource(R.string.wind_gusts, "$it") },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
                 )
             }
 
@@ -197,7 +206,8 @@ private fun MetricCard(
     value: String,
     supportingText: String,
     modifier: Modifier = Modifier,
-    supportingLeading: (@Composable () -> Unit)? = null
+    supportingLeading: (@Composable () -> Unit)? = null,
+    extraText: String? = null
 ) {
     ElevatedCard(
         shape = RoundedCornerShape(20.dp),
@@ -254,6 +264,15 @@ private fun MetricCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )
             }
+
+            if (extraText != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = extraText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+            }
         }
     }
 }
@@ -291,6 +310,7 @@ fun ExtraMetricsSectionPreview() {
         humidity = 70,
         windSpeed = 15.4,
         windDirection = 210,
+        windGusts = 32.4,
         weatherCode = 3,
         weatherDescription = "Overcast",
         isDay = true,

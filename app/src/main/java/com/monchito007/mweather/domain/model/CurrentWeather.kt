@@ -7,6 +7,7 @@ data class CurrentWeather(
     val humidity: Int?,
     val windSpeed: Double?,
     val windDirection: Int?,
+    val windGusts: Double? = null,
     val weatherCode: Int,
     val weatherDescription: String,
     val isDay: Boolean,
