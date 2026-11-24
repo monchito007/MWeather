@@ -33,6 +33,15 @@
     <string name="daylight_change">Mañana: %1$s min de luz</string>
     <string name="snow">Nieve</string>
     <string name="snowfall_cm">%1$s cm</string>
+    <string name="dew_point">Punto de rocío: %1$s</string>
+    <string name="visibility">Visibilidad</string>
+    <string name="visibility_good">Buena</string>
+    <string name="visibility_reduced">Reducida</string>
+    <string name="visibility_very_low">Muy baja</string>
+    <string name="sunshine">Horas de sol</string>
+    <string name="duration_h_min">%1$d h %2$d min</string>
+    <string name="rain_hours">%1$s h de lluvia</string>
+    <string name="no_rain">Sin lluvia</string>
     <string name="precipitation_mm">%1$s mm</string>
     <string name="precipitation_amount">%1$s mm precipitaciones</string>
     <string name="pressure">Presión</string>

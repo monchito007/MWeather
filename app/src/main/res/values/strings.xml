@@ -35,6 +35,15 @@
     <string name="daylight_change">Tomorrow: %1$s min of daylight</string>
     <string name="snow">Snow</string>
     <string name="snowfall_cm">%1$s cm</string>
+    <string name="dew_point">Dew point: %1$s</string>
+    <string name="visibility">Visibility</string>
+    <string name="visibility_good">Good</string>
+    <string name="visibility_reduced">Reduced</string>
+    <string name="visibility_very_low">Very poor</string>
+    <string name="sunshine">Sunshine</string>
+    <string name="duration_h_min">%1$d h %2$d min</string>
+    <string name="rain_hours">%1$s h of rain</string>
+    <string name="no_rain">No rain</string>
     <string name="precipitation_mm">%1$s mm</string>
     <string name="precipitation_amount">%1$s mm precipitation</string>
     <string name="pressure">Pressure</string>

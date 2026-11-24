@@ -58,7 +58,9 @@ fun OpenMeteoForecastDto.toDomain(
                     uvIndexMax = daily.uvIndexMax?.getOrNull(i),
                     sunrise = daily.sunrise?.getOrNull(i),
                     sunset = daily.sunset?.getOrNull(i),
-                    snowfallSum = daily.snowfallSum?.getOrNull(i)
+                    snowfallSum = daily.snowfallSum?.getOrNull(i),
+                    sunshineDuration = daily.sunshineDuration?.getOrNull(i),
+                    precipitationHours = daily.precipitationHours?.getOrNull(i)
                 )
             )
         }
@@ -77,7 +79,9 @@ fun OpenMeteoForecastDto.toDomain(
         precipitation = currentDto?.precipitation,
         pressure = currentDto?.pressureMsl,
         cloudCover = currentDto?.cloudCover?.toInt(),
-        uvIndex = currentDto?.uvIndex
+        uvIndex = currentDto?.uvIndex,
+        visibility = currentDto?.visibility,
+        dewPoint = currentDto?.dewPoint2m
     )
 
     val hourlyList = mutableListOf<HourlyForecast>()
