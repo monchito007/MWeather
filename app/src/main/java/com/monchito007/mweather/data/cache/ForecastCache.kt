@@ -19,7 +19,7 @@ interface ForecastCache {
 
 /**
  * Saves the forecast as JSON in a file, reusing the API's Moshi adapters. A JSON file is enough
- * for a single entry; Room would only be worth it for several cities (see docs/ROADMAP.md).
+ * for a single entry. Favorite cities are not cached here: only the main city (also used by the widget).
  */
 class FileForecastCache(
     private val file: File,

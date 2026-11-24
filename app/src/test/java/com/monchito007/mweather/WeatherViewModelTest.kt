@@ -538,6 +538,81 @@ class WeatherViewModelTest {
         viewModel.clearError()
         assertNull(viewModel.uiState.value.errorMessageRes)
     }
+
+    @Test
+    fun favoritesAreRestoredFromPreferences() = runTest {
+        fakePreferences.state.update { it.copy(favorites = listOf(SavedLocation(41.39, 2.17, "Barcelona"))) }
+        val viewModel = bareViewModel()
+        advanceUntilIdle()
+
+        assertEquals(listOf("Barcelona"), viewModel.uiState.value.favorites.map { it.name })
+    }
+
+    @Test
+    fun toggleFavoriteAddsReusingTheShownWeatherThenRemoves() = runTest {
+        val viewModel = bareViewModel()
+        val madrid = LocationSearchResult(id = 1, name = "Madrid", latitude = 40.42, longitude = -3.70, country = "Spain")
+        viewModel.selectLocation(madrid)
+        advanceUntilIdle()
+        val requestsBefore = fakeRepository.weatherRequests
+        val city = viewModel.uiState.value.mainCity!!
+
+        viewModel.toggleFavorite(city)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.isFavorite(city))
+        assertEquals(listOf(city), fakePreferences.state.value.favorites)
+        // The new page already has the weather shown on the main page: no extra download
+        viewModel.onFavoritePageShown(0)
+        advanceUntilIdle()
+        assertNotNull(viewModel.uiState.value.favoriteWeather[city.key])
+
+        viewModel.toggleFavorite(city)
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isFavorite(city))
+        assertTrue(fakePreferences.state.value.favorites.isEmpty())
+        assertTrue(fakeRepository.weatherRequests >= requestsBefore)
+    }
+
+    @Test
+    fun favoritePageLoadsItsWeatherWithoutTouchingTheCache() = runTest {
+        fakePreferences.state.update { it.copy(favorites = listOf(SavedLocation(41.39, 2.17, "Barcelona"))) }
+        val viewModel = bareViewModel()
+        advanceUntilIdle()
+
+        viewModel.onFavoritePageShown(0)
+        advanceUntilIdle()
+
+        val key = viewModel.uiState.value.favorites.first().key
+        assertEquals("Barcelona", viewModel.uiState.value.favoriteWeather[key]?.locationName)
+        assertEquals(false, fakeRepository.lastSaveToCache)
+        assertNull(viewModel.uiState.value.weather) // the main page is untouched
+    }
+
+    @Test
+    fun failedFavoriteIsMarkedAndCanBeRetried() = runTest {
+        fakePreferences.state.update { it.copy(favorites = listOf(SavedLocation(41.39, 2.17, "Barcelona"))) }
+        val viewModel = bareViewModel()
+        advanceUntilIdle()
+        val key = viewModel.uiState.value.favorites.first().key
+
+        fakeRepository.shouldReturnError = true
+        viewModel.onFavoritePageShown(0)
+        advanceUntilIdle()
+        assertTrue(key in viewModel.uiState.value.failedFavorites)
+
+        fakeRepository.shouldReturnError = false
+        viewModel.refreshFavorite(0)
+        advanceUntilIdle()
+        assertFalse(key in viewModel.uiState.value.failedFavorites)
+        assertNotNull(viewModel.uiState.value.favoriteWeather[key])
+    }
+
+    @Test
+    fun samePlaceToleratesTheApiSnappingCoordinates() {
+        val searched = SavedLocation(40.4168, -3.7038, "Madrid")
+        assertTrue(searched.isSamePlaceAs(SavedLocation(40.4, -3.7, "Madrid")))
+        assertFalse(searched.isSamePlaceAs(SavedLocation(41.39, 2.17, "Barcelona")))
+    }
 }
 
 class FakeDeviceLocationProvider(
@@ -549,6 +624,7 @@ class FakeDeviceLocationProvider(
     }
 
     override fun hasLocationPermission(): Boolean = hasPermission
+
 }
 
 class FakeWeatherRepository : WeatherRepository {
@@ -556,6 +632,8 @@ class FakeWeatherRepository : WeatherRepository {
     var weatherRequests = 0
         private set
     var lastRequestedLatitude: Double? = null
+        private set
+    var lastSaveToCache: Boolean? = null
         private set
 
     /** What [getCachedWeather] returns: the forecast "saved on disk" by a previous run. */
@@ -635,9 +713,11 @@ class FakeWeatherRepository : WeatherRepository {
     override suspend fun getWeather(
         latitude: Double,
         longitude: Double,
-        locationName: String
+        locationName: String,
+        saveToCache: Boolean
     ): Result<Weather> {
         weatherRequests++
+        lastSaveToCache = saveToCache
         lastRequestedLatitude = latitude
         if (shouldReturnError) {
             return Result.failure(Exception("Network Error"))
@@ -673,5 +753,9 @@ class FakeUserPreferencesRepository : UserPreferencesRepository {
 
     override suspend fun saveLastLocation(location: SavedLocation?) {
         state.update { it.copy(lastLocation = location) }
+    }
+
+    override suspend fun saveFavorites(favorites: List<SavedLocation>) {
+        state.update { it.copy(favorites = favorites) }
     }
 }

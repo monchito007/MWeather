@@ -1,6 +1,7 @@
 package com.monchito007.mweather.ui.weather
 
 import androidx.annotation.StringRes
+import com.monchito007.mweather.data.preferences.SavedLocation
 import com.monchito007.mweather.domain.model.CurrentWeather
 import com.monchito007.mweather.domain.model.DailyForecast
 import com.monchito007.mweather.domain.model.HourlyForecast
@@ -62,8 +63,21 @@ data class WeatherUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val isHappyMode: Boolean = false,
     /** False until the saved settings have been read, to avoid flashing the default theme. */
-    val preferencesLoaded: Boolean = false
+    val preferencesLoaded: Boolean = false,
+    /** Favorite cities, one page each after the main page. */
+    val favorites: List<SavedLocation> = emptyList(),
+    /** Weather of each favorite by [SavedLocation.key], downloaded when its page is shown. */
+    val favoriteWeather: Map<String, Weather> = emptyMap(),
+    val loadingFavorites: Set<String> = emptySet(),
+    val failedFavorites: Set<String> = emptySet()
 ) {
+    /** The city on the main page, as it would be saved as a favorite, or null if none is shown. */
+    val mainCity: SavedLocation?
+        get() = selectedLocation?.let { SavedLocation(it.latitude, it.longitude, it.displayLocation) }
+            ?: weather?.let { SavedLocation(it.latitude, it.longitude, it.locationName) }
+
+    fun isFavorite(city: SavedLocation): Boolean = favorites.any { it.isSamePlaceAs(city) }
+
     val isDarkTheme: Boolean?
         get() = when (themeMode) {
             ThemeMode.LIGHT -> false

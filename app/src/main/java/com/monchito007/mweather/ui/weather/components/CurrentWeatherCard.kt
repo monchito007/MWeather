@@ -26,12 +26,15 @@ import androidx.compose.material.icons.rounded.Grain
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.NightsStay
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.rounded.WbTwilight
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -67,7 +70,10 @@ fun CurrentWeatherCard(
     isHappyMode: Boolean = false,
     fetchedAtMillis: Long? = null,
     timezone: String? = null,
-    daily: List<DailyForecast> = emptyList()
+    daily: List<DailyForecast> = emptyList(),
+    /** Null hides the star (nothing that could be saved is shown). */
+    isFavorite: Boolean? = null,
+    onToggleFavorite: () -> Unit = {}
 ) {
     val primaryColor = MaterialTheme.colorScheme.primaryContainer
     val secondaryColor = MaterialTheme.colorScheme.tertiaryContainer
@@ -118,6 +124,18 @@ fun CurrentWeatherCard(
                             ),
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
+                    }
+
+                    if (isFavorite != null) {
+                        IconButton(onClick = onToggleFavorite) {
+                            Icon(
+                                imageVector = if (isFavorite) Icons.Rounded.Star else Icons.Rounded.StarBorder,
+                                contentDescription = stringResource(
+                                    if (isFavorite) R.string.remove_favorite else R.string.add_favorite
+                                ),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
 
                     // Unit Toggle Button

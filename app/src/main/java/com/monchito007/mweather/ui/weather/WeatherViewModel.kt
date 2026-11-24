@@ -57,7 +57,8 @@ class WeatherViewModel(
                     language = prefs.language,
                     themeMode = prefs.themeMode,
                     isHappyMode = prefs.isHappyMode,
-                    preferencesLoaded = true
+                    preferencesLoaded = true,
+                    favorites = prefs.favorites
                 )
             }
             storedPreferences.complete(prefs)
@@ -292,6 +293,62 @@ class WeatherViewModel(
         )
     }
 
+    /** Adds [city] to the favorites, or removes it if it already is one. */
+    fun toggleFavorite(city: SavedLocation) {
+        val favorites = _uiState.updateAndGet { state ->
+            val existing = state.favorites.firstOrNull { it.isSamePlaceAs(city) }
+            if (existing != null) {
+                state.copy(
+                    favorites = state.favorites - existing,
+                    favoriteWeather = state.favoriteWeather - existing.key
+                )
+            } else {
+                // The main page already has this city's weather: reuse it for the new page.
+                val weather = state.weather?.takeIf { state.mainCity?.isSamePlaceAs(city) == true }
+                state.copy(
+                    favorites = state.favorites + city,
+                    favoriteWeather = weather?.let { state.favoriteWeather + (city.key to it) } ?: state.favoriteWeather
+                )
+            }
+        }.favorites
+        viewModelScope.launch { preferencesRepository.saveFavorites(favorites) }
+    }
+
+    /** A favorite's page was shown: download its weather unless a recent one is already there. */
+    fun onFavoritePageShown(index: Int) = loadFavorite(index, force = false)
+
+    fun refreshFavorite(index: Int) = loadFavorite(index, force = true)
+
+    private fun loadFavorite(index: Int, force: Boolean) {
+        val city = _uiState.value.favorites.getOrNull(index) ?: return
+        val key = city.key
+        val current = _uiState.value
+        if (key in current.loadingFavorites) return
+        val fetchedAt = current.favoriteWeather[key]?.fetchedAtMillis
+        if (!force && fetchedAt != null && System.currentTimeMillis() - fetchedAt < FAVORITE_MAX_AGE_MILLIS) return
+
+        _uiState.update { it.copy(loadingFavorites = it.loadingFavorites + key, failedFavorites = it.failedFavorites - key) }
+        viewModelScope.launch {
+            val result = repository.getWeather(city.latitude, city.longitude, city.name, saveToCache = false)
+            _uiState.update { state ->
+                result.fold(
+                    onSuccess = { weather ->
+                        state.copy(
+                            favoriteWeather = state.favoriteWeather + (key to weather),
+                            loadingFavorites = state.loadingFavorites - key
+                        )
+                    },
+                    onFailure = {
+                        state.copy(
+                            loadingFavorites = state.loadingFavorites - key,
+                            failedFavorites = state.failedFavorites + key
+                        )
+                    }
+                )
+            }
+        }
+    }
+
     fun setSearchActive(active: Boolean) {
         _uiState.update { state ->
             state.copy(
@@ -370,6 +427,9 @@ class WeatherViewModel(
     }
 
     companion object {
+        /** A favorite's weather younger than this is shown again without downloading it. */
+        private const val FAVORITE_MAX_AGE_MILLIS = 15 * 60 * 1000L
+
         /** Builds the ViewModel from the app-wide [com.monchito007.mweather.di.AppContainer]. */
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

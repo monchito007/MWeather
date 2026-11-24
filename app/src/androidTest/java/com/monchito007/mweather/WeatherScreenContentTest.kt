@@ -1,6 +1,5 @@
 package com.monchito007.mweather
 
-import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -9,6 +8,7 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -18,6 +18,7 @@ import com.monchito007.mweather.domain.model.HourlyForecast
 import com.monchito007.mweather.domain.model.LocationSearchResult
 import com.monchito007.mweather.domain.model.Weather
 import com.monchito007.mweather.ui.theme.MWeatherTheme
+import com.monchito007.mweather.ui.weather.WEATHER_DETAILS_TAG
 import com.monchito007.mweather.ui.weather.AppLanguage
 import com.monchito007.mweather.ui.weather.ProvideAppLanguage
 import com.monchito007.mweather.ui.weather.ThemeMode
@@ -239,7 +240,7 @@ class WeatherScreenContentTest {
     // ---------- helpers ----------
 
     private fun scrollTo(text: String) {
-        composeRule.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(hasText(text))
+        composeRule.onNodeWithTag(WEATHER_DETAILS_TAG).performScrollToNode(hasText(text))
         composeRule.onNodeWithText(text).assertExists()
     }
 

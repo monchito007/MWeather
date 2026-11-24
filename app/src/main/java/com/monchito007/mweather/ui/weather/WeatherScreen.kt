@@ -3,6 +3,17 @@ package com.monchito007.mweather.ui.weather
 import com.monchito007.mweather.R
 import androidx.compose.ui.res.stringResource
 import android.Manifest
+import androidx.compose.foundation.background
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.monchito007.mweather.data.preferences.SavedLocation
+import kotlinx.coroutines.launch
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -124,6 +135,9 @@ fun WeatherScreen(
         onRequestDeviceLocation = requestLocationAndFetch,
         onRefresh = viewModel::refreshWeather,
         onClearError = viewModel::clearError,
+        onToggleFavorite = viewModel::toggleFavorite,
+        onFavoritePageShown = viewModel::onFavoritePageShown,
+        onRefreshFavorite = viewModel::refreshFavorite,
         modifier = modifier
     )
 }
@@ -142,9 +156,19 @@ fun WeatherScreenContent(
     onRequestDeviceLocation: () -> Unit,
     onRefresh: () -> Unit,
     onClearError: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onToggleFavorite: (SavedLocation) -> Unit = {},
+    onFavoritePageShown: (Int) -> Unit = {},
+    onRefreshFavorite: (Int) -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    // Page 0 is the main city (device location or last search), then one page per favorite.
+    val pagerState = rememberPagerState { 1 + uiState.favorites.size }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(pagerState.settledPage, uiState.favorites.size) {
+        if (pagerState.settledPage > 0) onFavoritePageShown(pagerState.settledPage - 1)
+    }
 
     // Resolved here (composable scope) because stringResource can't be called inside the effect.
     val errorMessage = uiState.errorMessageRes?.let { stringResource(it) }
@@ -190,13 +214,19 @@ fun WeatherScreenContent(
                         onActiveChanged = onSearchActiveChanged,
                         searchResults = uiState.searchResults,
                         isSearching = uiState.isSearching,
-                        onSelectLocation = onSelectLocation,
+                        onSelectLocation = { location ->
+                            onSelectLocation(location)
+                            scope.launch { pagerState.animateScrollToPage(0) }
+                        },
                         modifier = Modifier.weight(1f)
                     )
 
                     if (!uiState.isSearchActive) {
                         IconButton(
-                            onClick = onRequestDeviceLocation,
+                            onClick = {
+                                onRequestDeviceLocation()
+                                scope.launch { pagerState.animateScrollToPage(0) }
+                            },
                             modifier = Modifier.padding(start = 4.dp)
                         ) {
                             Icon(
@@ -218,158 +248,257 @@ fun WeatherScreenContent(
                     }
                 }
 
-                // Main Weather Body with Pull to Refresh
-                PullToRefreshBox(
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = onRefresh,
+                if (uiState.favorites.isNotEmpty()) {
+                    PageIndicator(pageCount = pagerState.pageCount, currentPage = pagerState.currentPage)
+                }
+
+                HorizontalPager(
+                    state = pagerState,
+                    key = { page -> if (page == 0) "main" else uiState.favorites.getOrNull(page - 1)?.key ?: page },
                     modifier = Modifier.fillMaxSize()
-                ) {
-                    when {
-                        uiState.isLoading -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(48.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Text(
-                                        text = stringResource(R.string.loading_weather),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-
-                        uiState.currentWeather != null -> {
-                            val currentWeather = uiState.currentWeather!!
-                            val todayDaily = uiState.dailyForecast.firstOrNull()
-                            val precipProb = todayDaily?.precipitationProbabilityMax
-
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(
-                                    start = 16.dp,
-                                    end = 16.dp,
-                                    top = 8.dp,
-                                    bottom = 24.dp
-                                ),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                // Error Banner if present alongside cached data
-                                if (errorMessage != null) {
-                                    item {
-                                        ErrorCard(
-                                            errorMessage = errorMessage,
-                                            onRetry = onRefresh,
-                                        )
-                                    }
-                                }
-
-                                // Current Weather Card
-                                item {
-                                    CurrentWeatherCard(
+                ) { page ->
+                    if (page == 0) {
+                        // Main city, with pull to refresh
+                        val weather = uiState.weather
+                        PullToRefreshBox(
+                            isRefreshing = uiState.isRefreshing,
+                            onRefresh = onRefresh,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            when {
+                                uiState.isLoading -> LoadingState()
+                                weather != null -> {
+                                    val mainCity = uiState.mainCity
+                                    WeatherDetails(
+                                        weather = weather,
                                         locationName = uiState.locationName,
-                                        currentWeather = currentWeather,
-                                        unit = uiState.unit,
+                                        uiState = uiState,
+                                        errorMessage = errorMessage,
+                                        isFavorite = mainCity?.let { uiState.isFavorite(it) },
+                                        onToggleFavorite = { mainCity?.let(onToggleFavorite) },
                                         onToggleUnit = onToggleUnit,
-                                        maxTemp = todayDaily?.maxTemp,
-                                        minTemp = todayDaily?.minTemp,
-                                        precipitationProbability = precipProb,
-                                        isHappyMode = uiState.isHappyMode,
-                                        fetchedAtMillis = uiState.weather?.fetchedAtMillis,
-                                        timezone = uiState.weather?.timezone,
-                                        daily = uiState.dailyForecast
+                                        onRefresh = onRefresh
                                     )
                                 }
-
-                                // Hourly Forecast Section
-                                if (uiState.hourlyForecast.isNotEmpty()) {
-                                    item {
-                                        HourlyForecastSection(
-                                            hourlyForecast = uiState.hourlyForecast,
-                                            unit = uiState.unit,
-                                            isHappyMode = uiState.isHappyMode
-                                        )
-                                    }
-                                }
-
-                                // 7-Day Forecast Section
-                                if (uiState.dailyForecast.isNotEmpty()) {
-                                    item {
-                                        DailyForecastSection(
-                                            dailyForecast = uiState.dailyForecast,
-                                            unit = uiState.unit,
-                                            isHappyMode = uiState.isHappyMode
-                                        )
-                                    }
-                                }
-
-                                // Air Quality Section (hidden if it couldn't be downloaded)
-                                uiState.weather?.airQuality?.let { airQuality ->
-                                    item {
-                                        AirQualitySection(airQuality = airQuality)
-                                    }
-                                }
-
-                                // Extra Metrics Section
-                                item {
-                                    ExtraMetricsSection(
-                                        currentWeather = currentWeather,
-                                        precipitationProbability = precipProb,
-                                        today = uiState.dailyForecast.getOrNull(0),
-                                        tomorrow = uiState.dailyForecast.getOrNull(1),
-                                        unit = uiState.unit,
-                                    )
-                                }
+                                else -> ErrorState(
+                                    message = errorMessage ?: stringResource(R.string.no_weather_data_available),
+                                    onRetry = onRefresh
+                                )
                             }
                         }
-
-                        else -> {
-                            // Empty or Failure State
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(24.dp),
-                                contentAlignment = Alignment.Center
+                    } else {
+                        // A favorite city
+                        val index = page - 1
+                        val city = uiState.favorites.getOrNull(index)
+                        if (city != null) {
+                            val weather = uiState.favoriteWeather[city.key]
+                            PullToRefreshBox(
+                                isRefreshing = weather != null && city.key in uiState.loadingFavorites,
+                                onRefresh = { onRefreshFavorite(index) },
+                                modifier = Modifier.fillMaxSize()
                             ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.ErrorOutline,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier.size(64.dp)
+                                when {
+                                    weather != null -> WeatherDetails(
+                                        weather = weather,
+                                        locationName = city.name,
+                                        uiState = uiState,
+                                        errorMessage = null,
+                                        isFavorite = true,
+                                        onToggleFavorite = { onToggleFavorite(city) },
+                                        onToggleUnit = onToggleUnit,
+                                        onRefresh = { onRefreshFavorite(index) }
                                     )
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Text(
-                                        text = errorMessage ?: stringResource(R.string.no_weather_data_available),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        textAlign = TextAlign.Center,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                    city.key in uiState.failedFavorites -> ErrorState(
+                                        message = stringResource(R.string.error_load_weather),
+                                        onRetry = { onRefreshFavorite(index) }
                                     )
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Button(onClick = onRefresh) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Refresh,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(text = stringResource(R.string.retry))
-                                    }
+                                    else -> LoadingState()
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+/** Test tag of the vertical list of one city's weather (the pager scrolls horizontally). */
+const val WEATHER_DETAILS_TAG = "weather_details"
+
+/** Everything shown for one city: main card, hourly, 7 days, air quality and detailed metrics. */
+@Composable
+private fun WeatherDetails(
+    weather: Weather,
+    locationName: String,
+    uiState: WeatherUiState,
+    errorMessage: String?,
+    isFavorite: Boolean?,
+    onToggleFavorite: () -> Unit,
+    onToggleUnit: () -> Unit,
+    onRefresh: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(WEATHER_DETAILS_TAG),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = 8.dp,
+            bottom = 24.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Error Banner if present alongside cached data
+        if (errorMessage != null) {
+            item {
+                ErrorCard(
+                    errorMessage = errorMessage,
+                    onRetry = onRefresh,
+                )
+            }
+        }
+
+        // Current Weather Card
+        item {
+            CurrentWeatherCard(
+                locationName = locationName,
+                currentWeather = weather.current,
+                unit = uiState.unit,
+                onToggleUnit = onToggleUnit,
+                maxTemp = weather.daily.firstOrNull()?.maxTemp,
+                minTemp = weather.daily.firstOrNull()?.minTemp,
+                precipitationProbability = weather.daily.firstOrNull()?.precipitationProbabilityMax,
+                isHappyMode = uiState.isHappyMode,
+                fetchedAtMillis = weather.fetchedAtMillis,
+                timezone = weather.timezone,
+                daily = weather.daily,
+                isFavorite = isFavorite,
+                onToggleFavorite = onToggleFavorite
+            )
+        }
+
+        // Hourly Forecast Section
+        if (weather.hourly.isNotEmpty()) {
+            item {
+                HourlyForecastSection(
+                    hourlyForecast = weather.hourly,
+                    unit = uiState.unit,
+                    isHappyMode = uiState.isHappyMode
+                )
+            }
+        }
+
+        // 7-Day Forecast Section
+        if (weather.daily.isNotEmpty()) {
+            item {
+                DailyForecastSection(
+                    dailyForecast = weather.daily,
+                    unit = uiState.unit,
+                    isHappyMode = uiState.isHappyMode
+                )
+            }
+        }
+
+        // Air Quality Section (hidden if it couldn't be downloaded)
+        weather.airQuality?.let { airQuality ->
+            item {
+                AirQualitySection(airQuality = airQuality)
+            }
+        }
+
+        // Extra Metrics Section
+        item {
+            ExtraMetricsSection(
+                currentWeather = weather.current,
+                precipitationProbability = weather.daily.firstOrNull()?.precipitationProbabilityMax,
+                today = weather.daily.getOrNull(0),
+                tomorrow = weather.daily.getOrNull(1),
+                unit = uiState.unit,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoadingState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator(modifier = Modifier.size(48.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(R.string.loading_weather),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun ErrorState(message: String, onRetry: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = Icons.Rounded.ErrorOutline,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(64.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onRetry) {
+                Icon(
+                    imageVector = Icons.Rounded.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = stringResource(R.string.retry))
+            }
+        }
+    }
+}
+
+/** One dot per page; the current one is wider and coloured. */
+@Composable
+private fun PageIndicator(pageCount: Int, currentPage: Int) {
+    val description = stringResource(R.string.page_indicator, currentPage + 1, pageCount)
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 4.dp)
+            .semantics { contentDescription = description }
+    ) {
+        repeat(pageCount) { page ->
+            val selected = page == currentPage
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 3.dp)
+                    .size(width = if (selected) 18.dp else 7.dp, height = 7.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.outlineVariant
+                    )
+            )
         }
     }
 }
