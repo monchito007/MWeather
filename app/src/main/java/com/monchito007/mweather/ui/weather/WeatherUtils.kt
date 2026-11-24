@@ -3,6 +3,7 @@ package com.monchito007.mweather.ui.weather
 import androidx.annotation.StringRes
 import com.monchito007.mweather.R
 import com.monchito007.mweather.domain.model.DailyForecast
+import com.monchito007.mweather.domain.model.PollenType
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -166,6 +167,27 @@ object WeatherUtils {
         }.parse(localTime)?.time?.div(60_000L)
     } catch (_: java.text.ParseException) {
         null
+    }
+
+    /** European AQI bands: 0–20 good … 100+ extremely poor. */
+    @StringRes
+    fun airQualityLevelRes(europeanAqi: Int): Int = when {
+        europeanAqi < 20 -> R.string.aqi_good
+        europeanAqi < 40 -> R.string.aqi_fair
+        europeanAqi < 60 -> R.string.aqi_moderate
+        europeanAqi < 80 -> R.string.aqi_poor
+        europeanAqi < 100 -> R.string.aqi_very_poor
+        else -> R.string.aqi_extremely_poor
+    }
+
+    @StringRes
+    fun pollenNameRes(type: PollenType): Int = when (type) {
+        PollenType.ALDER -> R.string.pollen_alder
+        PollenType.BIRCH -> R.string.pollen_birch
+        PollenType.GRASS -> R.string.pollen_grass
+        PollenType.MUGWORT -> R.string.pollen_mugwort
+        PollenType.OLIVE -> R.string.pollen_olive
+        PollenType.RAGWEED -> R.string.pollen_ragweed
     }
 
     fun formatHourlyTime(timeStr: String): String =

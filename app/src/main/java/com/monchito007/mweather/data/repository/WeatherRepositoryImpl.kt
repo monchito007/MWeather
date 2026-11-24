@@ -9,6 +9,8 @@ import com.monchito007.mweather.domain.model.LocationSearchResult
 import com.monchito007.mweather.domain.model.Weather
 import com.monchito007.mweather.domain.repository.WeatherRepository
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 /**
  * Network failures are reported as [Result.failure] so the UI can tell the user,
@@ -41,11 +43,19 @@ class WeatherRepositoryImpl(
         longitude: Double,
         locationName: String
     ): Result<Weather> = runCatchingCancellable {
-        val forecast = api.getForecast(latitude = latitude, longitude = longitude)
-        val fetchedAt = clock()
-        // A cache that can't be written (e.g. disk full) must not hide the fresh forecast.
-        runCatchingCancellable { cache?.write(CachedForecastDto(fetchedAt, locationName, forecast)) }
-        forecast.toDomain(fallbackLocationName = locationName, fetchedAtMillis = fetchedAt)
+        coroutineScope {
+            // Downloaded in parallel; a failure here only hides the air quality section.
+            val airQuality = async {
+                runCatchingCancellable { api.getAirQuality(latitude = latitude, longitude = longitude) }.getOrNull()
+            }
+            val forecast = api.getForecast(latitude = latitude, longitude = longitude)
+            val air = airQuality.await()
+            val fetchedAt = clock()
+            // A cache that can't be written (e.g. disk full) must not hide the fresh forecast.
+            runCatchingCancellable { cache?.write(CachedForecastDto(fetchedAt, locationName, forecast, air)) }
+            forecast.toDomain(fallbackLocationName = locationName, fetchedAtMillis = fetchedAt)
+                .copy(airQuality = air?.toDomain())
+        }
     }
 
     override suspend fun getCachedWeather(): Weather? {
@@ -58,7 +68,7 @@ class WeatherRepositoryImpl(
             fetchedAtMillis = entry.fetchedAtMillis,
             // Not the cached "current" time: hours and days passed since the download are dropped.
             localNow = localTimeAt(now, forecast.utcOffsetSeconds, forecast.timezone)
-        )
+        ).copy(airQuality = entry.airQuality?.toDomain())
     }
 
     override suspend fun getDefaultWeather(): Result<Weather> =

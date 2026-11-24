@@ -4,6 +4,8 @@ import com.monchito007.mweather.data.api.OpenMeteoApi
 import com.monchito007.mweather.data.cache.FileForecastCache
 import com.monchito007.mweather.data.cache.ForecastCache
 import com.monchito007.mweather.data.dto.CachedForecastDto
+import com.monchito007.mweather.data.dto.AirQualityCurrentDto
+import com.monchito007.mweather.data.dto.AirQualityDto
 import com.monchito007.mweather.data.dto.CurrentWeatherDto
 import com.monchito007.mweather.data.dto.DailyWeatherDto
 import com.monchito007.mweather.data.dto.GeocodingSearchResponseDto
@@ -120,6 +122,17 @@ class ForecastCacheTest {
         assertEquals("2026-11-23T08:15", localTimeAt(MADRID_14_15_UTC_MILLIS, null, "America/New_York"))
     }
 
+    @Test
+    fun airQualityIsCachedWithTheForecast() = runTest {
+        val cache = fileCache()
+        val repository = WeatherRepositoryImpl(ForecastApi(), cache, clock = { MADRID_14_15_UTC_MILLIS })
+        repository.getWeather(40.4, -3.7, "Madrid").getOrThrow()
+
+        val cached = repository.getCachedWeather()!!
+
+        assertEquals(27, cached.airQuality?.europeanAqi)
+    }
+
     private companion object {
         const val HOUR = 60 * 60 * 1000L
         /** 2026-11-23 13:15 UTC = 14:15 in Madrid (UTC+1 in November). */
@@ -152,6 +165,13 @@ class ForecastCacheTest {
         ): OpenMeteoForecastDto {
             failWith?.let { throw it }
             return forecast()
+        }
+
+        override suspend fun getAirQuality(
+            url: String, latitude: Double, longitude: Double, current: String, timezone: String
+        ): AirQualityDto {
+            failWith?.let { throw it }
+            return AirQualityDto(AirQualityCurrentDto(europeanAqi = 27.0, pm25 = 6.0))
         }
     }
 }
