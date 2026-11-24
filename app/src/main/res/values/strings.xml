@@ -52,6 +52,7 @@
     <string name="updated_days_ago">Updated %1$d d ago</string>
     <string name="uv_extreme">Extreme</string>
     <string name="uv_high">High</string>
+    <string name="wind_gusts">Gusts: %1$s km/h</string>
     <string name="uv_with_max">%1$s · max %2$s</string>
     <string name="uv_index">UV Index</string>
     <string name="uv_low">Low</string>

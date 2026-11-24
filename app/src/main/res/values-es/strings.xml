@@ -50,6 +50,7 @@
     <string name="updated_days_ago">Actualizado hace %1$d d</string>
     <string name="uv_extreme">Extremo</string>
     <string name="uv_high">Alto</string>
+    <string name="wind_gusts">Rachas: %1$s km/h</string>
     <string name="uv_with_max">%1$s · máx. %2$s</string>
     <string name="uv_index">Índice UV</string>
     <string name="uv_low">Bajo</string>

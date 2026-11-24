@@ -35,6 +35,7 @@ data class CurrentWeatherDto(
     @Json(name = "pressure_msl") val pressureMsl: Double? = null,
     @Json(name = "wind_speed_10m") val windSpeed10m: Double? = null,
     @Json(name = "wind_direction_10m") val windDirection10m: Double? = null,
+    @Json(name = "wind_gusts_10m") val windGusts10m: Double? = null,
     @Json(name = "uv_index") val uvIndex: Double? = null
 )
 
