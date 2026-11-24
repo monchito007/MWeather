@@ -39,7 +39,7 @@
     <string name="precipitation_amount">%1$s mm precipitation</string>
     <string name="pressure">Pressure</string>
     <string name="rain">Rain</string>
-    <string name="rain_chance">Rain chance</string>
+    <string name="precipitation_chance">Precip. chance</string>
     <string name="retry">Retry</string>
     <string name="search_hint">Search city…</string>
     <string name="system_default">📱  System default</string>

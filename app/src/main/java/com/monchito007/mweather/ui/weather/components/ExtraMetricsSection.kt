@@ -147,25 +147,31 @@ fun ExtraMetricsSection(
                 )
             }
 
-            // Row 3: Rain Chance and Cloud Cover
+            // Row 3: Precipitation Chance and Cloud Cover (same height: the first title may wrap)
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
             ) {
                 MetricCard(
                     icon = Icons.Rounded.Grain,
-                    title = stringResource(R.string.rain_chance),
+                    title = stringResource(R.string.precipitation_chance),
                     value = precipitationProbability.orNoData { "$it%" },
                     supportingText = currentWeather.precipitation?.let { stringResource(R.string.precipitation_amount, it.toString()) }
                         ?: WeatherUtils.NO_DATA,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
                 )
                 MetricCard(
                     icon = Icons.Rounded.Cloud,
                     title = stringResource(R.string.cloud_cover),
                     value = currentWeather.cloudCover.orNoData { "$it%" },
                     supportingText = stringResource(R.string.cloud_coverage),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
                 )
             }
 

@@ -37,7 +37,7 @@
     <string name="precipitation_amount">%1$s mm precipitaciones</string>
     <string name="pressure">Presión</string>
     <string name="rain">Lluvia</string>
-    <string name="rain_chance">Prob. de lluvia</string>
+    <string name="precipitation_chance">Prob. de precipitación</string>
     <string name="retry">Reintentar</string>
     <string name="search_hint">Buscar ciudad…</string>
     <string name="system_default">📱  Predeterminado del sistema</string>
