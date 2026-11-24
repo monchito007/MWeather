@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -130,10 +131,10 @@ private fun DailyForecastRowItem(
             modifier = Modifier.width(90.dp)
         )
 
-        // Weather Icon + Precip Chance
+        // Weather Icon + Precip Chance and expected mm
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.width(72.dp)
+            modifier = Modifier.width(84.dp)
         ) {
             ColorfulWeatherIcon(
                 weatherCode = day.weatherCode,
@@ -141,17 +142,33 @@ private fun DailyForecastRowItem(
                 isHappyMode = isHappyMode,
                 modifier = Modifier.size(32.dp)
             )
-            val rainChance = day.precipitationProbabilityMax
-            if (rainChance != null && rainChance > 0) {
+            val rainChance = day.precipitationProbabilityMax?.takeIf { it > 0 }
+            val rainMm = WeatherUtils.formatPrecipitationMm(
+                day.precipitationSum,
+                LocalConfiguration.current.locales[0]
+            )
+            if (rainChance != null || rainMm != null) {
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "$rainChance%",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp
-                    ),
-                    color = MaterialTheme.colorScheme.tertiary
-                )
+                Column {
+                    if (rainChance != null) {
+                        Text(
+                            text = "$rainChance%",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            ),
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                    if (rainMm != null) {
+                        Text(
+                            text = stringResource(R.string.precipitation_mm, rainMm),
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = MaterialTheme.colorScheme.tertiary,
+                            maxLines = 1
+                        )
+                    }
+                }
             }
         }
 
@@ -260,7 +277,7 @@ fun DailyForecastSectionPreview() {
             weatherDescription = "Sunny",
             maxTemp = 24.0 + i,
             minTemp = 14.0 + i,
-            precipitationSum = 0.0,
+            precipitationSum = if (i % 2 == 0) 0.0 else 4.2,
             precipitationProbabilityMax = if (i % 2 == 0) 0 else 30,
             windSpeedMax = 15.0,
             uvIndexMax = 5.0,

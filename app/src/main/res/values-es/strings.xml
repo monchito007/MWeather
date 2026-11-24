@@ -27,6 +27,7 @@
     <string name="location_permission_denied">Permiso de ubicación denegado. Se mostrará la ubicación por defecto.</string>
     <string name="no_locations_found">No se encontraron ubicaciones</string>
     <string name="no_weather_data_available">No hay datos de clima disponibles</string>
+    <string name="precipitation_mm">%1$s mm</string>
     <string name="precipitation_amount">%1$s mm precipitaciones</string>
     <string name="pressure">Presión</string>
     <string name="rain">Lluvia</string>

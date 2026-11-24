@@ -3,6 +3,7 @@ package com.monchito007.mweather.ui.weather
 import androidx.annotation.StringRes
 import com.monchito007.mweather.R
 import java.util.Calendar
+import java.util.Locale
 
 /**
  * Pure helpers: they return resource IDs, never translated text, so the UI resolves them
@@ -60,6 +61,13 @@ object WeatherUtils {
      * How long ago a forecast was downloaded, as a string resource and the number to put in it:
      * "just now" under a minute, then minutes, hours and finally days.
      */
+    /**
+     * Expected rain in millimetres with one decimal in the [locale]'s style ("1.5" / "1,5"),
+     * or null when it would round to 0.0, so dry hours and days show nothing.
+     */
+    fun formatPrecipitationMm(mm: Double?, locale: Locale): String? =
+        if (mm == null || mm < 0.05) null else String.format(locale, "%.1f", mm)
+
     fun updatedAgo(fetchedAtMillis: Long, nowMillis: Long): Pair<Int, Long> {
         val minutes = ((nowMillis - fetchedAtMillis) / 60_000L).coerceAtLeast(0L)
         return when {

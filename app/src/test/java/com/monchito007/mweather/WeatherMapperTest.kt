@@ -13,6 +13,7 @@ import com.monchito007.mweather.ui.weather.orNoData
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.util.Locale
 
 class WeatherMapperTest {
 
@@ -151,5 +152,15 @@ class WeatherMapperTest {
     @Test
     fun unknownWeatherCodeIsNotClearSky() {
         assertEquals(R.string.weather_unknown, WeatherUtils.weatherDescriptionRes(WeatherCodeInfo.UNKNOWN_CODE))
+    }
+
+    @Test
+    fun precipitationMmUsesOneDecimalAndHidesDryValues() {
+        assertNull(WeatherUtils.formatPrecipitationMm(null, Locale.US))
+        assertNull(WeatherUtils.formatPrecipitationMm(0.0, Locale.US))
+        assertNull(WeatherUtils.formatPrecipitationMm(0.04, Locale.US))
+        assertEquals("0.1", WeatherUtils.formatPrecipitationMm(0.1, Locale.US))
+        assertEquals("12.5", WeatherUtils.formatPrecipitationMm(12.5, Locale.US))
+        assertEquals("1,5", WeatherUtils.formatPrecipitationMm(1.5, Locale.forLanguageTag("es")))
     }
 }

@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -185,6 +186,17 @@ private fun HourlyItemCard(
             } else {
                 Spacer(modifier = Modifier.height(14.dp))
             }
+
+            // Expected rain in mm (empty line when dry, so all cards keep the same height)
+            val rainMm = WeatherUtils.formatPrecipitationMm(
+                hourly.precipitation,
+                LocalConfiguration.current.locales[0]
+            )
+            Text(
+                text = rainMm?.let { stringResource(R.string.precipitation_mm, it) } ?: " ",
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                color = MaterialTheme.colorScheme.tertiary
+            )
         }
     }
 }
@@ -200,7 +212,7 @@ fun HourlyForecastSectionPreview() {
             weatherCode = if (i % 3 == 0) 61 else 0,
             weatherDescription = "Clear",
             precipitationProbability = if (i % 3 == 0) 40 else 0,
-            precipitation = 0.0,
+            precipitation = if (i % 3 == 0) 1.3 else 0.0,
             humidity = 60,
             windSpeed = 10.0,
             isDay = true
