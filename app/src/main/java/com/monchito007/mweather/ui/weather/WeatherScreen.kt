@@ -55,6 +55,7 @@ import com.monchito007.mweather.domain.model.DailyForecast
 import com.monchito007.mweather.domain.model.HourlyForecast
 import com.monchito007.mweather.domain.model.Weather
 import com.monchito007.mweather.ui.theme.MWeatherTheme
+import com.monchito007.mweather.ui.weather.components.AirQualitySection
 import com.monchito007.mweather.ui.weather.components.CurrentWeatherCard
 import com.monchito007.mweather.ui.weather.components.DailyForecastSection
 import com.monchito007.mweather.ui.weather.components.ExtraMetricsSection
@@ -306,6 +307,13 @@ fun WeatherScreenContent(
                                             unit = uiState.unit,
                                             isHappyMode = uiState.isHappyMode
                                         )
+                                    }
+                                }
+
+                                // Air Quality Section (hidden if it couldn't be downloaded)
+                                uiState.weather?.airQuality?.let { airQuality ->
+                                    item {
+                                        AirQualitySection(airQuality = airQuality)
                                     }
                                 }
 

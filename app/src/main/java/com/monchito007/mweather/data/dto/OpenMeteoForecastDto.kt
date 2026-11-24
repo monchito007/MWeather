@@ -19,7 +19,8 @@ data class OpenMeteoForecastDto(
 data class CachedForecastDto(
     @Json(name = "fetched_at_millis") val fetchedAtMillis: Long,
     @Json(name = "location_name") val locationName: String,
-    @Json(name = "forecast") val forecast: OpenMeteoForecastDto
+    @Json(name = "forecast") val forecast: OpenMeteoForecastDto,
+    @Json(name = "air_quality") val airQuality: AirQualityDto? = null
 )
 
 @JsonClass(generateAdapter = true)

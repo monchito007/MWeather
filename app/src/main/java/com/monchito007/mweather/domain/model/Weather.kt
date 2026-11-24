@@ -10,4 +10,6 @@ data class Weather(
     val daily: List<DailyForecast>,
     /** When this forecast was downloaded (epoch millis), or null if unknown (previews, tests). */
     val fetchedAtMillis: Long? = null,
+    /** Null when the air quality couldn't be downloaded; the rest of the forecast still shows. */
+    val airQuality: AirQuality? = null,
 )

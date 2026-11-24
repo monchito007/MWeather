@@ -1,16 +1,20 @@
 package com.monchito007.mweather
 
 import com.monchito007.mweather.data.api.OpenMeteoApi
+import com.monchito007.mweather.data.dto.AirQualityCurrentDto
+import com.monchito007.mweather.data.dto.AirQualityDto
 import com.monchito007.mweather.data.dto.CurrentWeatherDto
 import com.monchito007.mweather.data.dto.DailyWeatherDto
 import com.monchito007.mweather.data.dto.GeocodingLocationDto
 import com.monchito007.mweather.data.dto.GeocodingSearchResponseDto
 import com.monchito007.mweather.data.dto.OpenMeteoForecastDto
 import com.monchito007.mweather.data.repository.WeatherRepositoryImpl
+import com.monchito007.mweather.domain.model.PollenType
 import com.monchito007.mweather.domain.model.WeatherCategory
 import com.monchito007.mweather.domain.model.WeatherCodeInfo
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
@@ -90,10 +94,31 @@ class WeatherRepositoryTest {
         assertEquals("Unknown weather", unknownInfo.description)
         assertEquals(WeatherCategory.UNKNOWN, unknownInfo.category)
     }
+
+    @Test
+    fun airQualityIsMappedWithPollenPresentHighestFirst() = runTest {
+        val repository = WeatherRepositoryImpl(FakeOpenMeteoApi())
+
+        val airQuality = repository.getWeather(40.4, -3.7, "Madrid").getOrThrow().airQuality!!
+
+        assertEquals(42, airQuality.europeanAqi)
+        assertEquals(listOf(PollenType.OLIVE, PollenType.GRASS), airQuality.pollen.map { it.type }) // no birch, mugwort is a trace
+    }
+
+    @Test
+    fun airQualityFailureStillShowsTheForecast() = runTest {
+        val repository = WeatherRepositoryImpl(FakeOpenMeteoApi(airQualityFailsWith = IOException("down")))
+
+        val weather = repository.getWeather(40.4, -3.7, "Madrid").getOrThrow()
+
+        assertEquals(18.5, weather.current.temperature ?: 0.0, 0.001)
+        assertNull(weather.airQuality)
+    }
 }
 
 private class FakeOpenMeteoApi(
     private val failWith: Exception? = null,
+    private val airQualityFailsWith: Exception? = null,
     private val searchResults: List<GeocodingLocationDto>? = listOf(
         GeocodingLocationDto(id = 1, name = "London", latitude = 51.5, longitude = -0.12, country = "UK")
     )
@@ -133,6 +158,20 @@ private class FakeOpenMeteoApi(
                 temperature2mMax = listOf(20.0, 21.0),
                 temperature2mMin = listOf(10.0, 11.0)
             )
+        )
+    }
+
+    override suspend fun getAirQuality(
+        url: String,
+        latitude: Double,
+        longitude: Double,
+        current: String,
+        timezone: String
+    ): AirQualityDto {
+        failWith?.let { throw it }
+        airQualityFailsWith?.let { throw it }
+        return AirQualityDto(
+            AirQualityCurrentDto(europeanAqi = 41.6, pm25 = 9.0, grassPollen = 3.0, olivePollen = 12.0, birchPollen = 0.0, mugwortPollen = 0.3)
         )
     }
 }

@@ -1,5 +1,10 @@
 package com.monchito007.mweather.data.mapper
 
+import kotlin.math.roundToInt
+import com.monchito007.mweather.data.dto.AirQualityDto
+import com.monchito007.mweather.domain.model.AirQuality
+import com.monchito007.mweather.domain.model.Pollen
+import com.monchito007.mweather.domain.model.PollenType
 import com.monchito007.mweather.data.dto.GeocodingLocationDto
 import com.monchito007.mweather.data.dto.OpenMeteoForecastDto
 import com.monchito007.mweather.domain.model.CurrentWeather
@@ -153,4 +158,25 @@ internal fun localTimeAt(epochMillis: Long, utcOffsetSeconds: Int?, timezone: St
         timeZone = TimeZone.getTimeZone("UTC")
     }
     return format.format(Date(epochMillis + offsetMillis))
+}
+
+fun AirQualityDto.toDomain(): AirQuality? {
+    val now = current ?: return null
+    val pollen = listOfNotNull(
+        now.alderPollen?.let { Pollen(PollenType.ALDER, it) },
+        now.birchPollen?.let { Pollen(PollenType.BIRCH, it) },
+        now.grassPollen?.let { Pollen(PollenType.GRASS, it) },
+        now.mugwortPollen?.let { Pollen(PollenType.MUGWORT, it) },
+        now.olivePollen?.let { Pollen(PollenType.OLIVE, it) },
+        now.ragweedPollen?.let { Pollen(PollenType.RAGWEED, it) }
+    ).filter { it.grainsPerCubicMetre.roundToInt() >= 1 } // traces (0.3 grains/m³) are just noise
+        .sortedByDescending { it.grainsPerCubicMetre }
+    return AirQuality(
+        europeanAqi = now.europeanAqi?.roundToInt(),
+        pm25 = now.pm25,
+        pm10 = now.pm10,
+        nitrogenDioxide = now.nitrogenDioxide,
+        ozone = now.ozone,
+        pollen = pollen
+    )
 }
