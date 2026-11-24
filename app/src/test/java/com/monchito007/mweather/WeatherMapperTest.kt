@@ -251,4 +251,29 @@ class WeatherMapperTest {
         assertEquals(4 to 30, WeatherUtils.hoursAndMinutes(16200.0))
         assertEquals(0 to 0, WeatherUtils.hoursAndMinutes(0.0))
     }
+
+    @Test
+    fun localDateTimeUsesTheLocationsTimeZone() {
+        // 2026-11-23 13:15 UTC
+        val millis = 1_795_439_700_000L
+        assertEquals("2026-11-23T14:15", WeatherUtils.localDateTime(millis, "Europe/Madrid"))
+        assertEquals("2026-11-23T08:15", WeatherUtils.localDateTime(millis, "America/New_York"))
+    }
+
+    @Test
+    fun nextSunEventIsSunsetDuringTheDayAndSunriseAtNight() {
+        fun day(date: String, rise: String, set: String) = DailyForecast(
+            date = date, weatherCode = 0, weatherDescription = "", maxTemp = null, minTemp = null,
+            precipitationSum = null, precipitationProbabilityMax = null, windSpeedMax = null,
+            uvIndexMax = null, sunrise = "${date}T$rise", sunset = "${date}T$set"
+        )
+        val days = listOf(day("2026-11-24", "06:57", "16:52"), day("2026-11-25", "06:58", "16:51"))
+
+        assertEquals(WeatherUtils.SunEvent(isSunrise = true, minutesUntil = 57), WeatherUtils.nextSunEvent("2026-11-24T06:00", days))
+        assertEquals(WeatherUtils.SunEvent(isSunrise = false, minutesUntil = 47), WeatherUtils.nextSunEvent("2026-11-24T16:05", days))
+        // After sunset: tomorrow's sunrise, across midnight
+        assertEquals(WeatherUtils.SunEvent(isSunrise = true, minutesUntil = 8 * 60 + 58), WeatherUtils.nextSunEvent("2026-11-24T22:00", days))
+        assertNull(WeatherUtils.nextSunEvent("2026-11-25T20:00", days))
+        assertNull(WeatherUtils.nextSunEvent("garbage", days))
+    }
 }

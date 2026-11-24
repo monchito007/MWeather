@@ -42,6 +42,10 @@
     <string name="duration_h_min">%1$d h %2$d min</string>
     <string name="rain_hours">%1$s h de lluvia</string>
     <string name="no_rain">Sin lluvia</string>
+    <string name="sunrise_in">Amanece en %1$s</string>
+    <string name="sunset_in">Atardece en %1$s</string>
+    <string name="local_time">Hora local</string>
+    <string name="duration_min">%1$d min</string>
     <string name="precipitation_mm">%1$s mm</string>
     <string name="precipitation_amount">%1$s mm precipitaciones</string>
     <string name="pressure">Presión</string>

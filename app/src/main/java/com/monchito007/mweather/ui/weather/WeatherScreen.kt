@@ -281,7 +281,9 @@ fun WeatherScreenContent(
                                         minTemp = todayDaily?.minTemp,
                                         precipitationProbability = precipProb,
                                         isHappyMode = uiState.isHappyMode,
-                                        fetchedAtMillis = uiState.weather?.fetchedAtMillis
+                                        fetchedAtMillis = uiState.weather?.fetchedAtMillis,
+                                        timezone = uiState.weather?.timezone,
+                                        daily = uiState.dailyForecast
                                     )
                                 }
 
