@@ -10,5 +10,7 @@ data class HourlyForecast(
     val precipitation: Double?,
     val humidity: Int?,
     val windSpeed: Double?,
-    val isDay: Boolean
+    val isDay: Boolean,
+    /** Snow in cm (precipitation is its water equivalent in mm). */
+    val snowfall: Double? = null
 )

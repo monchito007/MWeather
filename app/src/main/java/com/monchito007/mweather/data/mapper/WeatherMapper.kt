@@ -57,7 +57,8 @@ fun OpenMeteoForecastDto.toDomain(
                     windSpeedMax = daily.windSpeed10mMax?.getOrNull(i),
                     uvIndexMax = daily.uvIndexMax?.getOrNull(i),
                     sunrise = daily.sunrise?.getOrNull(i),
-                    sunset = daily.sunset?.getOrNull(i)
+                    sunset = daily.sunset?.getOrNull(i),
+                    snowfallSum = daily.snowfallSum?.getOrNull(i)
                 )
             )
         }
@@ -96,7 +97,8 @@ fun OpenMeteoForecastDto.toDomain(
                     precipitation = hourly.precipitation?.getOrNull(i),
                     humidity = hourly.relativeHumidity2m?.getOrNull(i)?.toInt(),
                     windSpeed = hourly.windSpeed10m?.getOrNull(i),
-                    isDay = (hourly.isDay?.getOrNull(i) ?: 1) == 1
+                    isDay = (hourly.isDay?.getOrNull(i) ?: 1) == 1,
+                    snowfall = hourly.snowfall?.getOrNull(i)
                 )
             )
         }

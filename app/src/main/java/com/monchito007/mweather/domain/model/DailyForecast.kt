@@ -12,5 +12,7 @@ data class DailyForecast(
     val windSpeedMax: Double?,
     val uvIndexMax: Double?,
     val sunrise: String?,
-    val sunset: String?
+    val sunset: String?,
+    /** Snow in cm (precipitationSum is its water equivalent in mm). */
+    val snowfallSum: Double? = null
 )

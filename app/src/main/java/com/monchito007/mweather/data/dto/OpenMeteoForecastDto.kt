@@ -46,6 +46,7 @@ data class HourlyWeatherDto(
     @Json(name = "relative_humidity_2m") val relativeHumidity2m: List<Double?>? = null,
     @Json(name = "precipitation_probability") val precipitationProbability: List<Double?>? = null,
     @Json(name = "precipitation") val precipitation: List<Double?>? = null,
+    @Json(name = "snowfall") val snowfall: List<Double?>? = null,
     @Json(name = "weather_code") val weatherCode: List<Int?>? = null,
     @Json(name = "wind_speed_10m") val windSpeed10m: List<Double?>? = null,
     @Json(name = "is_day") val isDay: List<Int?>? = null
@@ -58,6 +59,7 @@ data class DailyWeatherDto(
     @Json(name = "temperature_2m_max") val temperature2mMax: List<Double?>? = null,
     @Json(name = "temperature_2m_min") val temperature2mMin: List<Double?>? = null,
     @Json(name = "precipitation_sum") val precipitationSum: List<Double?>? = null,
+    @Json(name = "snowfall_sum") val snowfallSum: List<Double?>? = null,
     @Json(name = "precipitation_probability_max") val precipitationProbabilityMax: List<Double?>? = null,
     @Json(name = "wind_speed_10m_max") val windSpeed10mMax: List<Double?>? = null,
     @Json(name = "uv_index_max") val uvIndexMax: List<Double?>? = null,
