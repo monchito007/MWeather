@@ -2,6 +2,7 @@ package com.monchito007.mweather.ui.weather
 
 import androidx.annotation.StringRes
 import com.monchito007.mweather.R
+import com.monchito007.mweather.domain.model.DailyForecast
 import java.util.Calendar
 import java.util.Locale
 
@@ -88,6 +89,21 @@ object WeatherUtils {
         val start = minuteOfDay(sunrise) ?: return null
         val end = minuteOfDay(sunset) ?: return null
         return (end - start).takeIf { it >= 0 }
+    }
+
+    /**
+     * Signed change in daylight from [today] to [tomorrow] ("+1", "−2", "±0"), or null when
+     * either day's daylight is unknown.
+     */
+    fun daylightChange(today: DailyForecast?, tomorrow: DailyForecast?): String? {
+        val now = daylightMinutes(today?.sunrise, today?.sunset) ?: return null
+        val next = daylightMinutes(tomorrow?.sunrise, tomorrow?.sunset) ?: return null
+        val diff = next - now
+        return when {
+            diff > 0 -> "+$diff"
+            diff < 0 -> "−${-diff}"
+            else -> "±0"
+        }
     }
 
     private fun minuteOfDay(time: String): Int? {

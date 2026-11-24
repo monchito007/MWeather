@@ -157,7 +157,7 @@ fun ExtraMetricsSection(
                 )
             }
 
-            // Row 4: Sunrise (with hours of daylight) and Sunset (with tomorrow's sunset)
+            // Row 4: Sunrise (with hours of daylight) and Sunset (with tomorrow's change in daylight)
             if (today?.sunrise != null || today?.sunset != null) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -176,8 +176,8 @@ fun ExtraMetricsSection(
                         icon = Icons.Rounded.NightsStay,
                         title = stringResource(R.string.sunset),
                         value = today.sunset.orNoData { WeatherUtils.formatHourlyTime(it) },
-                        supportingText = tomorrow?.sunset
-                            ?.let { stringResource(R.string.tomorrow_at, WeatherUtils.formatHourlyTime(it)) }
+                        supportingText = WeatherUtils.daylightChange(today, tomorrow)
+                            ?.let { stringResource(R.string.daylight_change, it) }
                             ?: WeatherUtils.NO_DATA,
                         modifier = Modifier.weight(1f)
                     )

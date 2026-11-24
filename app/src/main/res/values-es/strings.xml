@@ -30,7 +30,7 @@
     <string name="sunrise">Amanecer</string>
     <string name="sunset">Atardecer</string>
     <string name="daylight_duration">%1$d h %2$d min de luz</string>
-    <string name="tomorrow_at">Mañana: %1$s</string>
+    <string name="daylight_change">Mañana: %1$s min de luz</string>
     <string name="precipitation_mm">%1$s mm</string>
     <string name="precipitation_amount">%1$s mm precipitaciones</string>
     <string name="pressure">Presión</string>
