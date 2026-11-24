@@ -6,7 +6,16 @@ import com.monchito007.mweather.domain.model.Weather
 interface WeatherRepository {
     /** [languageCode] is an ISO 639-1 code ("es", "en") for the returned place names. */
     suspend fun searchLocations(query: String, languageCode: String = "en"): Result<List<LocationSearchResult>>
-    suspend fun getWeather(latitude: Double, longitude: Double, locationName: String = ""): Result<Weather>
+    /**
+     * [saveToCache] false is for favorite cities: the offline cache (and the widget) keep showing
+     * the main city instead of whichever favorite was looked at last.
+     */
+    suspend fun getWeather(
+        latitude: Double,
+        longitude: Double,
+        locationName: String = "",
+        saveToCache: Boolean = true
+    ): Result<Weather>
     suspend fun getDefaultWeather(): Result<Weather>
 
     /**

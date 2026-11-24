@@ -62,6 +62,9 @@
     <string name="pollen_mugwort">Artemisa</string>
     <string name="pollen_olive">Olivo</string>
     <string name="pollen_ragweed">Ambrosía</string>
+    <string name="add_favorite">Añadir a favoritos</string>
+    <string name="remove_favorite">Quitar de favoritos</string>
+    <string name="page_indicator">Página %1$d de %2$d</string>
     <string name="precipitation_mm">%1$s mm</string>
     <string name="precipitation_amount">%1$s mm precipitaciones</string>
     <string name="pressure">Presión</string>

@@ -41,7 +41,8 @@ class WeatherRepositoryImpl(
     override suspend fun getWeather(
         latitude: Double,
         longitude: Double,
-        locationName: String
+        locationName: String,
+        saveToCache: Boolean
     ): Result<Weather> = runCatchingCancellable {
         coroutineScope {
             // Downloaded in parallel; a failure here only hides the air quality section.
@@ -52,7 +53,9 @@ class WeatherRepositoryImpl(
             val air = airQuality.await()
             val fetchedAt = clock()
             // A cache that can't be written (e.g. disk full) must not hide the fresh forecast.
-            runCatchingCancellable { cache?.write(CachedForecastDto(fetchedAt, locationName, forecast, air)) }
+            if (saveToCache) {
+                runCatchingCancellable { cache?.write(CachedForecastDto(fetchedAt, locationName, forecast, air)) }
+            }
             forecast.toDomain(fallbackLocationName = locationName, fetchedAtMillis = fetchedAt)
                 .copy(airQuality = air?.toDomain())
         }

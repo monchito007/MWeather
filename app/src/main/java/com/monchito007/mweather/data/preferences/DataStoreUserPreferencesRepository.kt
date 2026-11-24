@@ -12,6 +12,11 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.monchito007.mweather.ui.weather.AppLanguage
 import com.monchito007.mweather.ui.weather.TemperatureUnit
 import com.monchito007.mweather.ui.weather.ThemeMode
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -22,9 +27,21 @@ private val Context.userPreferencesDataStore: DataStore<Preferences> by preferen
     name = "user_preferences"
 )
 
+/** How a favorite is stored: a JSON list in a single preference, using a generated adapter. */
+@JsonClass(generateAdapter = true)
+internal data class FavoriteCityJson(
+    @Json(name = "lat") val latitude: Double,
+    @Json(name = "lon") val longitude: Double,
+    @Json(name = "name") val name: String
+)
+
 class DataStoreUserPreferencesRepository(
     private val dataStore: DataStore<Preferences>
 ) : UserPreferencesRepository {
+
+    private val favoritesAdapter = Moshi.Builder().build().adapter<List<FavoriteCityJson>>(
+        Types.newParameterizedType(List::class.java, FavoriteCityJson::class.java)
+    )
 
     override val preferences: Flow<UserPreferences> = dataStore.data
         .catch { error ->
@@ -61,6 +78,23 @@ class DataStoreUserPreferencesRepository(
         }
     }
 
+    override suspend fun saveFavorites(favorites: List<SavedLocation>) {
+        val json = favoritesAdapter.toJson(favorites.map { FavoriteCityJson(it.latitude, it.longitude, it.name) })
+        dataStore.edit { prefs -> prefs[Keys.FAVORITES] = json }
+    }
+
+    /** Unreadable favorites (e.g. from a future version) are dropped rather than crashing the app. */
+    private fun parseFavorites(json: String?): List<SavedLocation> {
+        if (json == null) return emptyList()
+        return try {
+            favoritesAdapter.fromJson(json).orEmpty().map { SavedLocation(it.latitude, it.longitude, it.name) }
+        } catch (_: IOException) {
+            emptyList()
+        } catch (_: JsonDataException) {
+            emptyList()
+        }
+    }
+
     private fun Preferences.toUserPreferences(): UserPreferences {
         val defaults = UserPreferences()
         val latitude = this[Keys.LAST_LATITUDE]
@@ -74,7 +108,8 @@ class DataStoreUserPreferencesRepository(
                 SavedLocation(latitude, longitude, this[Keys.LAST_NAME].orEmpty())
             } else {
                 null
-            }
+            },
+            favorites = parseFavorites(this[Keys.FAVORITES])
         )
     }
 
@@ -90,6 +125,7 @@ class DataStoreUserPreferencesRepository(
         val LAST_LATITUDE = doublePreferencesKey("last_location_latitude")
         val LAST_LONGITUDE = doublePreferencesKey("last_location_longitude")
         val LAST_NAME = stringPreferencesKey("last_location_name")
+        val FAVORITES = stringPreferencesKey("favorite_cities")
     }
 
     companion object {

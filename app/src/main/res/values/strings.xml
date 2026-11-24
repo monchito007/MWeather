@@ -64,6 +64,9 @@
     <string name="pollen_mugwort">Mugwort</string>
     <string name="pollen_olive">Olive</string>
     <string name="pollen_ragweed">Ragweed</string>
+    <string name="add_favorite">Add to favorites</string>
+    <string name="remove_favorite">Remove from favorites</string>
+    <string name="page_indicator">Page %1$d of %2$d</string>
     <string name="precipitation_mm">%1$s mm</string>
     <string name="precipitation_amount">%1$s mm precipitation</string>
     <string name="pressure">Pressure</string>
