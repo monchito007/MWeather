@@ -129,8 +129,11 @@ fun ExtraMetricsSection(
                     icon = Icons.Rounded.WbSunny,
                     title = stringResource(R.string.uv_index),
                     value = currentWeather.uvIndex.orNoData { "$it" },
-                    supportingText = currentWeather.uvIndex?.let { stringResource(WeatherUtils.uvIndexDescriptionRes(it)) }
-                        ?: WeatherUtils.NO_DATA,
+                    // Current UV (0 at night) plus today's peak, so the card is right at any hour
+                    supportingText = currentWeather.uvIndex?.let { uv ->
+                        val level = stringResource(WeatherUtils.uvIndexDescriptionRes(uv))
+                        today?.uvIndexMax?.let { stringResource(R.string.uv_with_max, level, "$it") } ?: level
+                    } ?: WeatherUtils.NO_DATA,
                     modifier = Modifier.weight(1f)
                 )
             }
