@@ -1,6 +1,9 @@
 package com.monchito007.mweather.ui.weather.components
 
 import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
+import androidx.compose.runtime.LaunchedEffect
+import com.monchito007.mweather.domain.model.DailyForecast
 import com.monchito007.mweather.ui.weather.orNoData
 import com.monchito007.mweather.R
 import androidx.compose.ui.res.stringResource
@@ -21,6 +24,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Air
 import androidx.compose.material.icons.rounded.Grain
 import androidx.compose.material.icons.rounded.LocationOn
+import androidx.compose.material.icons.rounded.NightsStay
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.WbTwilight
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -59,7 +65,9 @@ fun CurrentWeatherCard(
     modifier: Modifier = Modifier,
     precipitationProbability: Int? = null,
     isHappyMode: Boolean = false,
-    fetchedAtMillis: Long? = null
+    fetchedAtMillis: Long? = null,
+    timezone: String? = null,
+    daily: List<DailyForecast> = emptyList()
 ) {
     val primaryColor = MaterialTheme.colorScheme.primaryContainer
     val secondaryColor = MaterialTheme.colorScheme.tertiaryContainer
@@ -123,6 +131,10 @@ fun CurrentWeatherCard(
                             fontSize = 14.sp
                         )
                     }
+                }
+
+                if (timezone != null) {
+                    LocalTimeAndSunRow(timezone, daily)
                 }
 
                 if (fetchedAtMillis != null) {
@@ -309,6 +321,59 @@ fun CurrentWeatherCardPreview() {
  * "Updated 5 min ago". The current time is re-read when the forecast changes and whenever the
  * app comes back to the foreground, which is when an old value would otherwise be noticed.
  */
+/**
+ * Current time at the location (not the phone's) and how long until the next sunrise or
+ * sunset. Ticks at the start of every minute while on screen.
+ */
+@Composable
+private fun LocalTimeAndSunRow(timezone: String, daily: List<DailyForecast>) {
+    var nowMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            nowMillis = System.currentTimeMillis()
+            delay(60_000L - nowMillis % 60_000L)
+        }
+    }
+    val nowLocal = WeatherUtils.localDateTime(nowMillis, timezone)
+    val sunEvent = WeatherUtils.nextSunEvent(nowLocal, daily)
+    val color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
+    val style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(start = 30.dp, top = 4.dp) // aligned with the location name
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Schedule,
+            contentDescription = stringResource(R.string.local_time),
+            tint = color,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(text = WeatherUtils.formatHourlyTime(nowLocal), style = style, color = color)
+
+        if (sunEvent != null) {
+            Spacer(modifier = Modifier.width(12.dp))
+            Icon(
+                imageVector = if (sunEvent.isSunrise) Icons.Rounded.WbTwilight else Icons.Rounded.NightsStay,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            val hours = sunEvent.minutesUntil / 60
+            val minutes = sunEvent.minutesUntil % 60
+            val duration = if (hours > 0) stringResource(R.string.duration_h_min, hours, minutes)
+            else stringResource(R.string.duration_min, minutes)
+            Text(
+                text = stringResource(if (sunEvent.isSunrise) R.string.sunrise_in else R.string.sunset_in, duration),
+                style = style,
+                color = color
+            )
+        }
+    }
+}
+
 @Composable
 private fun UpdatedAgoText(fetchedAtMillis: Long) {
     var nowMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }

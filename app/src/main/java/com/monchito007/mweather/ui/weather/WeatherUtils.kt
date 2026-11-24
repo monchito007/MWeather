@@ -3,8 +3,11 @@ package com.monchito007.mweather.ui.weather
 import androidx.annotation.StringRes
 import com.monchito007.mweather.R
 import com.monchito007.mweather.domain.model.DailyForecast
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import kotlin.math.roundToInt
 
 /**
@@ -129,6 +132,40 @@ object WeatherUtils {
     fun hoursAndMinutes(seconds: Double): Pair<Int, Int> {
         val minutes = (seconds / 60).roundToInt().coerceAtLeast(0)
         return minutes / 60 to minutes % 60
+    }
+
+    /** Local date and time at [timezone] ("2026-11-24T16:05"), the same format the API uses. */
+    fun localDateTime(nowMillis: Long, timezone: String): String =
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone(timezone)
+        }.format(Date(nowMillis))
+
+    /** The next sunrise or sunset after [nowLocal], and how many minutes away it is. */
+    data class SunEvent(val isSunrise: Boolean, val minutesUntil: Int)
+
+    /**
+     * Finds the next sunrise or sunset in [days] after [nowLocal] (both in the location's local
+     * time), or null when there is none, e.g. during polar day/night or with no data.
+     */
+    fun nextSunEvent(nowLocal: String, days: List<DailyForecast>): SunEvent? {
+        val now = epochMinutes(nowLocal) ?: return null
+        for (day in days) {
+            for ((time, isSunrise) in listOf(day.sunrise to true, day.sunset to false)) {
+                val at = time?.let { epochMinutes(it) } ?: continue
+                if (at > now) return SunEvent(isSunrise, (at - now).toInt())
+            }
+        }
+        return null
+    }
+
+    /** Minutes since the epoch of a local "yyyy-MM-ddTHH:mm", read as if it were UTC. */
+    private fun epochMinutes(localTime: String): Long? = try {
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+            isLenient = false
+        }.parse(localTime)?.time?.div(60_000L)
+    } catch (_: java.text.ParseException) {
+        null
     }
 
     fun formatHourlyTime(timeStr: String): String =
