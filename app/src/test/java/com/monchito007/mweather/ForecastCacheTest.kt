@@ -85,7 +85,7 @@ class ForecastCacheTest {
         val cached = repository.getCachedWeather()!!
 
         assertEquals("2026-11-24", cached.daily.first().date) // "today" is no longer the 23rd
-        assertEquals(6.0, cached.current.uvIndex ?: 0.0, 0.001) // today's UV, not the 23rd's
+        assertEquals(6.0, cached.daily.first().uvIndexMax ?: 0.0, 0.001) // today's UV peak, not the 23rd's
     }
 
     @Test

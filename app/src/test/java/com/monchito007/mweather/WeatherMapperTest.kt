@@ -186,4 +186,19 @@ class WeatherMapperTest {
         assertEquals("±0", WeatherUtils.daylightChange(today, day("2026-11-25", "06:57", "16:52")))
         assertNull(WeatherUtils.daylightChange(today, null))
     }
+
+    @Test
+    fun currentUvIndexComesFromCurrentNotFromTodaysPeak() {
+        val dto = OpenMeteoForecastDto(
+            latitude = 40.4,
+            longitude = -3.7,
+            current = CurrentWeatherDto(time = "2026-11-19T22:00", uvIndex = 0.0),
+            daily = DailyWeatherDto(time = listOf("2026-11-19"), uvIndexMax = listOf(6.2))
+        )
+
+        val weather = dto.toDomain("Madrid")
+
+        assertEquals(0.0, weather.current.uvIndex ?: -1.0, 0.001)
+        assertEquals(6.2, weather.daily.first().uvIndexMax ?: 0.0, 0.001)
+    }
 }

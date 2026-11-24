@@ -75,7 +75,7 @@ fun OpenMeteoForecastDto.toDomain(
         precipitation = currentDto?.precipitation,
         pressure = currentDto?.pressureMsl,
         cloudCover = currentDto?.cloudCover?.toInt(),
-        uvIndex = dailyList.firstOrNull()?.uvIndexMax
+        uvIndex = currentDto?.uvIndex
     )
 
     val hourlyList = mutableListOf<HourlyForecast>()
