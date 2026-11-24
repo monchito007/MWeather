@@ -29,6 +29,10 @@
     <string name="location_permission_denied">Location permission denied. Showing default location.</string>
     <string name="no_locations_found">No locations found</string>
     <string name="no_weather_data_available">No weather data available</string>
+    <string name="sunrise">Sunrise</string>
+    <string name="sunset">Sunset</string>
+    <string name="daylight_duration">%1$d h %2$d min of daylight</string>
+    <string name="tomorrow_at">Tomorrow: %1$s</string>
     <string name="precipitation_mm">%1$s mm</string>
     <string name="precipitation_amount">%1$s mm precipitation</string>
     <string name="pressure">Pressure</string>

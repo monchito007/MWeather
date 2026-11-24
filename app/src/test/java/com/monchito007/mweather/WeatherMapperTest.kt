@@ -163,4 +163,12 @@ class WeatherMapperTest {
         assertEquals("12.5", WeatherUtils.formatPrecipitationMm(12.5, Locale.US))
         assertEquals("1,5", WeatherUtils.formatPrecipitationMm(1.5, Locale.forLanguageTag("es")))
     }
+
+    @Test
+    fun daylightMinutesBetweenSunriseAndSunset() {
+        assertEquals(592, WeatherUtils.daylightMinutes("2026-11-24T07:01", "2026-11-24T16:53"))
+        assertNull(WeatherUtils.daylightMinutes(null, "2026-11-24T16:53"))
+        assertNull(WeatherUtils.daylightMinutes("2026-11-24T07:01", "2026-11-25T16:53"))
+        assertNull(WeatherUtils.daylightMinutes("garbage", "2026-11-24T16:53"))
+    }
 }

@@ -24,6 +24,8 @@ import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.Compress
 import androidx.compose.material.icons.rounded.Grain
 import androidx.compose.material.icons.rounded.Navigation
+import androidx.compose.material.icons.rounded.NightsStay
+import androidx.compose.material.icons.rounded.WbTwilight
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.material.icons.rounded.WbSunny
@@ -41,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.monchito007.mweather.domain.model.CurrentWeather
+import com.monchito007.mweather.domain.model.DailyForecast
 import com.monchito007.mweather.ui.theme.MWeatherTheme
 import com.monchito007.mweather.ui.weather.WeatherUtils
 
@@ -49,6 +52,8 @@ fun ExtraMetricsSection(
     currentWeather: CurrentWeather,
     modifier: Modifier = Modifier,
     precipitationProbability: Int? = null,
+    today: DailyForecast? = null,
+    tomorrow: DailyForecast? = null,
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
@@ -150,6 +155,33 @@ fun ExtraMetricsSection(
                     supportingText = stringResource(R.string.cloud_coverage),
                     modifier = Modifier.weight(1f)
                 )
+            }
+
+            // Row 4: Sunrise (with hours of daylight) and Sunset (with tomorrow's sunset)
+            if (today?.sunrise != null || today?.sunset != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    MetricCard(
+                        icon = Icons.Rounded.WbTwilight,
+                        title = stringResource(R.string.sunrise),
+                        value = today.sunrise.orNoData { WeatherUtils.formatHourlyTime(it) },
+                        supportingText = WeatherUtils.daylightMinutes(today.sunrise, today.sunset)
+                            ?.let { stringResource(R.string.daylight_duration, it / 60, it % 60) }
+                            ?: WeatherUtils.NO_DATA,
+                        modifier = Modifier.weight(1f)
+                    )
+                    MetricCard(
+                        icon = Icons.Rounded.NightsStay,
+                        title = stringResource(R.string.sunset),
+                        value = today.sunset.orNoData { WeatherUtils.formatHourlyTime(it) },
+                        supportingText = tomorrow?.sunset
+                            ?.let { stringResource(R.string.tomorrow_at, WeatherUtils.formatHourlyTime(it)) }
+                            ?: WeatherUtils.NO_DATA,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
