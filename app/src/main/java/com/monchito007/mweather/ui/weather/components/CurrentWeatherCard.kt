@@ -133,10 +133,6 @@ fun CurrentWeatherCard(
                     }
                 }
 
-                if (timezone != null) {
-                    LocalTimeAndSunRow(timezone, daily)
-                }
-
                 if (fetchedAtMillis != null) {
                     UpdatedAgoText(fetchedAtMillis)
                 }
@@ -256,6 +252,12 @@ fun CurrentWeatherCard(
                         )
                     }
                 }
+
+                // Local time and time to the next sunrise/sunset, at the bottom of the card
+                if (timezone != null) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    LocalTimeAndSunRow(timezone, daily)
+                }
             }
         }
     }
@@ -341,7 +343,8 @@ private fun LocalTimeAndSunRow(timezone: String, daily: List<DailyForecast>) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = 30.dp, top = 4.dp) // aligned with the location name
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Icon(
             imageVector = Icons.Rounded.Schedule,
