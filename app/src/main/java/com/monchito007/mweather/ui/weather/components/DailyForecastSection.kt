@@ -143,11 +143,10 @@ private fun DailyForecastRowItem(
                 modifier = Modifier.size(32.dp)
             )
             val rainChance = day.precipitationProbabilityMax?.takeIf { it > 0 }
-            val rainMm = WeatherUtils.formatPrecipitationMm(
-                day.precipitationSum,
-                LocalConfiguration.current.locales[0]
-            )
-            if (rainChance != null || rainMm != null) {
+            val locale = LocalConfiguration.current.locales[0]
+            val hasAmount = WeatherUtils.formatPrecipitationMm(day.precipitationSum, locale) != null ||
+                WeatherUtils.formatPrecipitationMm(day.snowfallSum, locale) != null
+            if (rainChance != null || hasAmount) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Column {
                     if (rainChance != null) {
@@ -160,14 +159,7 @@ private fun DailyForecastRowItem(
                             color = MaterialTheme.colorScheme.tertiary
                         )
                     }
-                    if (rainMm != null) {
-                        Text(
-                            text = stringResource(R.string.precipitation_mm, rainMm),
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                            color = MaterialTheme.colorScheme.tertiary,
-                            maxLines = 1
-                        )
-                    }
+                    PrecipitationAmount(rainMm = day.precipitationSum, snowCm = day.snowfallSum)
                 }
             }
         }

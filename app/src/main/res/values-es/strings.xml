@@ -31,11 +31,13 @@
     <string name="sunset">Atardecer</string>
     <string name="daylight_duration">%1$d h %2$d min de luz</string>
     <string name="daylight_change">Mañana: %1$s min de luz</string>
+    <string name="snow">Nieve</string>
+    <string name="snowfall_cm">%1$s cm</string>
     <string name="precipitation_mm">%1$s mm</string>
     <string name="precipitation_amount">%1$s mm precipitaciones</string>
     <string name="pressure">Presión</string>
     <string name="rain">Lluvia</string>
-    <string name="rain_chance">Prob. de lluvia</string>
+    <string name="precipitation_chance">Prob. de precipitación</string>
     <string name="retry">Reintentar</string>
     <string name="search_hint">Buscar ciudad…</string>
     <string name="system_default">📱  Predeterminado del sistema</string>

@@ -203,4 +203,20 @@ class WeatherMapperTest {
         assertEquals(6.2, weather.daily.first().uvIndexMax ?: 0.0, 0.001)
         assertEquals(31.7, weather.current.windGusts ?: 0.0, 0.001)
     }
+
+    @Test
+    fun snowfallIsMappedForHoursAndDays() {
+        val dto = OpenMeteoForecastDto(
+            latitude = 42.6,
+            longitude = 0.7,
+            current = CurrentWeatherDto(time = "2026-11-19T10:00"),
+            hourly = HourlyWeatherDto(time = listOf("2026-11-19T10:00"), snowfall = listOf(1.4)),
+            daily = DailyWeatherDto(time = listOf("2026-11-19"), snowfallSum = listOf(8.75))
+        )
+
+        val weather = dto.toDomain("Baqueira")
+
+        assertEquals(1.4, weather.hourly.first().snowfall ?: 0.0, 0.001)
+        assertEquals(8.75, weather.daily.first().snowfallSum ?: 0.0, 0.001)
+    }
 }

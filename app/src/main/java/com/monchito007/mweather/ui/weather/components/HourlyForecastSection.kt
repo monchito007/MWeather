@@ -27,7 +27,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -187,15 +186,11 @@ private fun HourlyItemCard(
                 Spacer(modifier = Modifier.height(14.dp))
             }
 
-            // Expected rain in mm (empty line when dry, so all cards keep the same height)
-            val rainMm = WeatherUtils.formatPrecipitationMm(
-                hourly.precipitation,
-                LocalConfiguration.current.locales[0]
-            )
-            Text(
-                text = rainMm?.let { stringResource(R.string.precipitation_mm, it) } ?: " ",
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                color = MaterialTheme.colorScheme.tertiary
+            // Expected rain in mm or snow in cm (empty line when dry, so all cards keep the same height)
+            PrecipitationAmount(
+                rainMm = hourly.precipitation,
+                snowCm = hourly.snowfall,
+                keepLineWhenDry = true
             )
         }
     }
