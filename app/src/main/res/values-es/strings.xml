@@ -27,6 +27,10 @@
     <string name="location_permission_denied">Permiso de ubicación denegado. Se mostrará la ubicación por defecto.</string>
     <string name="no_locations_found">No se encontraron ubicaciones</string>
     <string name="no_weather_data_available">No hay datos de clima disponibles</string>
+    <string name="sunrise">Amanecer</string>
+    <string name="sunset">Atardecer</string>
+    <string name="daylight_duration">%1$d h %2$d min de luz</string>
+    <string name="daylight_change">Mañana: %1$s min de luz</string>
     <string name="precipitation_mm">%1$s mm</string>
     <string name="precipitation_amount">%1$s mm precipitaciones</string>
     <string name="pressure">Presión</string>

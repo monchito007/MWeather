@@ -312,6 +312,8 @@ fun WeatherScreenContent(
                                     ExtraMetricsSection(
                                         currentWeather = currentWeather,
                                         precipitationProbability = precipProb,
+                                        today = uiState.dailyForecast.getOrNull(0),
+                                        tomorrow = uiState.dailyForecast.getOrNull(1),
                                     )
                                 }
                             }

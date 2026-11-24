@@ -6,6 +6,7 @@ import com.monchito007.mweather.data.dto.HourlyWeatherDto
 import com.monchito007.mweather.data.dto.OpenMeteoForecastDto
 import com.monchito007.mweather.data.mapper.firstUpcomingHourIndex
 import com.monchito007.mweather.data.mapper.toDomain
+import com.monchito007.mweather.domain.model.DailyForecast
 import com.monchito007.mweather.domain.model.WeatherCodeInfo
 import com.monchito007.mweather.ui.weather.TemperatureUnit
 import com.monchito007.mweather.ui.weather.WeatherUtils
@@ -162,5 +163,27 @@ class WeatherMapperTest {
         assertEquals("0.1", WeatherUtils.formatPrecipitationMm(0.1, Locale.US))
         assertEquals("12.5", WeatherUtils.formatPrecipitationMm(12.5, Locale.US))
         assertEquals("1,5", WeatherUtils.formatPrecipitationMm(1.5, Locale.forLanguageTag("es")))
+    }
+
+    @Test
+    fun daylightMinutesBetweenSunriseAndSunset() {
+        assertEquals(592, WeatherUtils.daylightMinutes("2026-11-24T07:01", "2026-11-24T16:53"))
+        assertNull(WeatherUtils.daylightMinutes(null, "2026-11-24T16:53"))
+        assertNull(WeatherUtils.daylightMinutes("2026-11-24T07:01", "2026-11-25T16:53"))
+        assertNull(WeatherUtils.daylightMinutes("garbage", "2026-11-24T16:53"))
+    }
+
+    @Test
+    fun daylightChangeComparesTomorrowWithToday() {
+        fun day(date: String, rise: String, set: String) = DailyForecast(
+            date = date, weatherCode = 0, weatherDescription = "", maxTemp = null, minTemp = null,
+            precipitationSum = null, precipitationProbabilityMax = null, windSpeedMax = null,
+            uvIndexMax = null, sunrise = "${date}T$rise", sunset = "${date}T$set"
+        )
+        val today = day("2026-11-24", "06:57", "16:52")
+        assertEquals("−2", WeatherUtils.daylightChange(today, day("2026-11-25", "06:58", "16:51")))
+        assertEquals("+3", WeatherUtils.daylightChange(today, day("2026-11-25", "06:55", "16:53")))
+        assertEquals("±0", WeatherUtils.daylightChange(today, day("2026-11-25", "06:57", "16:52")))
+        assertNull(WeatherUtils.daylightChange(today, null))
     }
 }

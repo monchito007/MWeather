@@ -2,6 +2,7 @@ package com.monchito007.mweather.ui.weather
 
 import androidx.annotation.StringRes
 import com.monchito007.mweather.R
+import com.monchito007.mweather.domain.model.DailyForecast
 import java.util.Calendar
 import java.util.Locale
 
@@ -76,6 +77,40 @@ object WeatherUtils {
             minutes < 24 * 60 -> R.string.updated_hours_ago to minutes / 60
             else -> R.string.updated_days_ago to minutes / (24 * 60)
         }
+    }
+
+    /**
+     * Minutes of daylight between [sunrise] and [sunset] ("2026-11-24T07:01"), or null when
+     * either is missing, malformed or on different dates (e.g. polar day/night).
+     */
+    fun daylightMinutes(sunrise: String?, sunset: String?): Int? {
+        if (sunrise == null || sunset == null) return null
+        if (sunrise.substringBefore("T") != sunset.substringBefore("T")) return null
+        val start = minuteOfDay(sunrise) ?: return null
+        val end = minuteOfDay(sunset) ?: return null
+        return (end - start).takeIf { it >= 0 }
+    }
+
+    /**
+     * Signed change in daylight from [today] to [tomorrow] ("+1", "−2", "±0"), or null when
+     * either day's daylight is unknown.
+     */
+    fun daylightChange(today: DailyForecast?, tomorrow: DailyForecast?): String? {
+        val now = daylightMinutes(today?.sunrise, today?.sunset) ?: return null
+        val next = daylightMinutes(tomorrow?.sunrise, tomorrow?.sunset) ?: return null
+        val diff = next - now
+        return when {
+            diff > 0 -> "+$diff"
+            diff < 0 -> "−${-diff}"
+            else -> "±0"
+        }
+    }
+
+    private fun minuteOfDay(time: String): Int? {
+        val parts = time.substringAfter("T", "").split(":")
+        val hours = parts.getOrNull(0)?.toIntOrNull() ?: return null
+        val minutes = parts.getOrNull(1)?.toIntOrNull() ?: return null
+        return if (hours in 0..23 && minutes in 0..59) hours * 60 + minutes else null
     }
 
     fun formatHourlyTime(timeStr: String): String =
