@@ -204,7 +204,8 @@ private fun HourlyItemCard(
             HourlyDetail(
                 icon = Icons.Rounded.Air,
                 description = stringResource(R.string.wind),
-                text = hourly.windSpeed.orNoData { "${it.roundToInt()} km/h" }
+                text = hourly.windSpeed.orNoData { "${it.roundToInt()} km/h" },
+                windDirection = hourly.windDirection
             )
             HourlyDetail(
                 icon = Icons.Rounded.Opacity,
@@ -216,7 +217,12 @@ private fun HourlyItemCard(
 }
 
 @Composable
-private fun HourlyDetail(icon: ImageVector, description: String, text: String) {
+private fun HourlyDetail(
+    icon: ImageVector,
+    description: String,
+    text: String,
+    windDirection: Int? = null
+) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = icon,
@@ -231,6 +237,10 @@ private fun HourlyDetail(icon: ImageVector, description: String, text: String) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1
         )
+        if (windDirection != null) {
+            Spacer(modifier = Modifier.width(2.dp))
+            WindArrow(windDirection, size = 11.dp)
+        }
     }
 }
 
@@ -248,7 +258,8 @@ fun HourlyForecastSectionPreview() {
             precipitation = if (i % 3 == 0) 1.3 else 0.0,
             humidity = 60,
             windSpeed = 10.0,
-            isDay = true
+            isDay = true,
+            windDirection = i * 30
         )
     }
 

@@ -12,5 +12,7 @@ data class HourlyForecast(
     val windSpeed: Double?,
     val isDay: Boolean,
     /** Snow in cm (precipitation is its water equivalent in mm). */
-    val snowfall: Double? = null
+    val snowfall: Double? = null,
+    /** Degrees the wind comes FROM (0 = north). */
+    val windDirection: Int? = null
 )

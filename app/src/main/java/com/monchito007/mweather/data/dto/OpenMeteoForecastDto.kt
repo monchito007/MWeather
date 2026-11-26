@@ -52,6 +52,7 @@ data class HourlyWeatherDto(
     @Json(name = "snowfall") val snowfall: List<Double?>? = null,
     @Json(name = "weather_code") val weatherCode: List<Int?>? = null,
     @Json(name = "wind_speed_10m") val windSpeed10m: List<Double?>? = null,
+    @Json(name = "wind_direction_10m") val windDirection10m: List<Double?>? = null,
     @Json(name = "is_day") val isDay: List<Int?>? = null
 )
 

@@ -107,7 +107,8 @@ fun OpenMeteoForecastDto.toDomain(
                     humidity = hourly.relativeHumidity2m?.getOrNull(i)?.toInt(),
                     windSpeed = hourly.windSpeed10m?.getOrNull(i),
                     isDay = (hourly.isDay?.getOrNull(i) ?: 1) == 1,
-                    snowfall = hourly.snowfall?.getOrNull(i)
+                    snowfall = hourly.snowfall?.getOrNull(i),
+                    windDirection = hourly.windDirection10m?.getOrNull(i)?.toInt()
                 )
             )
         }

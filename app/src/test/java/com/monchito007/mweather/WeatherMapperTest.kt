@@ -221,6 +221,24 @@ class WeatherMapperTest {
     }
 
     @Test
+    fun hourlyWindDirectionIsMappedAndMissingValuesStayNull() {
+        val dto = OpenMeteoForecastDto(
+            latitude = 40.4,
+            longitude = -3.7,
+            current = CurrentWeatherDto(time = "2026-11-19T10:00"),
+            hourly = HourlyWeatherDto(
+                time = listOf("2026-11-19T10:00", "2026-11-19T11:00"),
+                windDirection10m = listOf(247.6, null)
+            )
+        )
+
+        val hourly = dto.toDomain("Madrid").hourly
+
+        assertEquals(247, hourly[0].windDirection)
+        assertNull(hourly[1].windDirection)
+    }
+
+    @Test
     fun visibilityDewPointSunshineAndRainHoursAreMapped() {
         val dto = OpenMeteoForecastDto(
             latitude = 40.4,

@@ -3,6 +3,8 @@ package com.monchito007.mweather
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -124,8 +126,33 @@ class WeatherScreenContentTest {
     fun windDirection_showsCompassPointDegreesAndArrow() {
         setContent(WeatherUiState(weather = sampleWeather())) // wind from 250° = west
 
+        // Arrow next to the wind in the main card, at the top of the screen
+        composeRule.onAllNodesWithContentDescription("Viento del oeste").onFirst().assertExists()
+
+        // And the compass in the "Wind" metric card
         scrollTo("O 250°")
-        composeRule.onNodeWithContentDescription("Viento del oeste").assertExists()
+        composeRule.onAllNodesWithContentDescription("Viento del oeste").onFirst().assertExists()
+    }
+
+    @Test
+    fun hourlyWind_showsDirectionArrow() {
+        val weather = sampleWeather().let { w ->
+            w.copy(
+                current = w.current.copy(windDirection = null),
+                hourly = w.hourly.map { it.copy(windDirection = 0) } // from the north
+            )
+        }
+        setContent(WeatherUiState(weather = weather))
+
+        composeRule.onAllNodesWithContentDescription("Viento del norte").onFirst().assertExists()
+    }
+
+    @Test
+    fun missingWindDirection_showsNoArrow() {
+        val weather = sampleWeather().let { it.copy(current = it.current.copy(windDirection = null)) }
+        setContent(WeatherUiState(weather = weather))
+
+        composeRule.onAllNodesWithContentDescription("Viento del", substring = true).assertCountEquals(0)
     }
 
     @Test

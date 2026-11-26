@@ -5,9 +5,7 @@ import com.monchito007.mweather.ui.weather.orNoData
 import com.monchito007.mweather.R
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Column
@@ -18,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Air
@@ -26,7 +23,6 @@ import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.Compress
 import androidx.compose.material.icons.rounded.Grain
 import androidx.compose.material.icons.rounded.LightMode
-import androidx.compose.material.icons.rounded.Navigation
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.NightsStay
 import androidx.compose.material.icons.rounded.WbTwilight
@@ -41,7 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -321,30 +316,6 @@ private fun MetricCard(
                 )
             }
         }
-    }
-}
-
-/**
- * Small compass: a ring with an arrow pointing where the wind blows TO. [degrees] is the
- * meteorological direction the wind comes FROM (0 = from the north), hence the extra 180°.
- */
-@Composable
-private fun WindCompass(degrees: Int, modifier: Modifier = Modifier) {
-    val from = stringArrayResource(R.array.compass_points)[WeatherUtils.compassPointIndex(degrees)]
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(22.dp)
-            .border(1.5.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
-    ) {
-        Icon(
-            imageVector = Icons.Rounded.Navigation,
-            contentDescription = stringResource(R.string.wind_from, from),
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .size(14.dp)
-                .rotate(degrees + 180f)
-        )
     }
 }
 

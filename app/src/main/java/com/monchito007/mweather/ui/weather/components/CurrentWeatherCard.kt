@@ -259,7 +259,8 @@ fun CurrentWeatherCard(
                         QuickMetricBadge(
                             icon = Icons.Rounded.Air,
                             label = stringResource(R.string.wind),
-                            value = currentWeather.windSpeed.orNoData { "${it.roundToInt()} km/h" }
+                            value = currentWeather.windSpeed.orNoData { "${it.roundToInt()} km/h" },
+                            windDirection = currentWeather.windDirection
                         )
 
                         // Rain Chance
@@ -285,7 +286,8 @@ fun CurrentWeatherCard(
 private fun QuickMetricBadge(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
-    value: String
+    value: String,
+    windDirection: Int? = null
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically
@@ -304,6 +306,10 @@ private fun QuickMetricBadge(
             ),
             color = MaterialTheme.colorScheme.onSurface
         )
+        if (windDirection != null) {
+            Spacer(modifier = Modifier.width(4.dp))
+            WindArrow(windDirection, size = 16.dp)
+        }
     }
 }
 
